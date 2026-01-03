@@ -81,13 +81,16 @@ const spanClass = {
 
 function CardBlock({ card, onClick }) {
   const base =
-    "relative  bg-[#F2F2F2] p-6 min-h-[170px] " +
-    "before:content-[''] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-5 " +
-    "before:bg-[repeating-linear-gradient(to_bottom,#BDBDBD_0_3px,transparent_3px_6px)]";
+    "relative  bg-[#F2F2F2] p-6 min-h-[250px] " +
+    "before:content-[''] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-7 " +
+    "before:bg-[repeating-linear-gradient(to_bottom,#6A6A6A_0_3px,transparent_0px_4px)]";
+    
+  const base_without_line =
+  "relative  bg-[#F2F2F2] p-6 min-h-[250px] ";
 
   if (card.variant === "image") {
     return (
-      <div className={`${spanClass[card.span]}  min-h-[170px] overflow-hidden`}>
+      <div className={`${spanClass[card.span]} min-h-[170px] overflow-hidden`}>
         <div className="relative h-full min-h-[170px]">
           <Image src="/sol.gif" alt="demo" fill className="object-cover" />
         </div>
@@ -98,10 +101,10 @@ function CardBlock({ card, onClick }) {
   if (card.variant === "combo") {
     return (
       <article
-        className={`${spanClass[card.span]} ${base} bg-[#B5292A] text-white cursor-pointer`}
+        className={`${spanClass[card.span]} ${base_without_line} !bg-[#B5292A] text-white cursor-pointer`}
         onClick={onClick}
       >
-        <div className="pl-6 flex h-full flex-col">
+        <div className="flex h-full flex-col text-center">
           <h3 className="text-2xl font-bold">{card.title}</h3>
           {card.desc && <p className="mt-3 text-white/90 leading-snug">{card.desc}</p>}
           <div className="mt-auto pt-6 text-white/90">✦ ✦ ✦</div>

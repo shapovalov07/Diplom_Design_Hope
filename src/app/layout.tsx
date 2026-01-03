@@ -1,7 +1,7 @@
 'use client'
 
 import { Unbounded } from "next/font/google";
-// import Navbar from "@/src/sections/Navbar";
+import Navbar from "@/src/sections/Navbar";
 
 import "./globals.css";
 
@@ -20,12 +20,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru">
-      {/* <Navbar /> */}
-      <body
-        className={`${geistUnbouded.variable}`}
-      >
-        
-        
+      <body className={`${geistUnbouded.variable}`}>
+        <Navbar />  
         {children}
       </body>
     </html>

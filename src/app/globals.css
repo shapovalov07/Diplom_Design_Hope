@@ -27,8 +27,8 @@ body {
   color: var(--ink);
   font-family: var(--font-body);
   background:
-    radial-gradient(1200px 700px at 85% -10%, rgba(255, 229, 195, 0.65), transparent 60%),
-    radial-gradient(1000px 600px at 5% 15%, rgba(202, 228, 255, 0.65), transparent 55%),
+    /* radial-gradient(1200px 700px at 85% -10%, rgba(255, 229, 195, 0.65), transparent 60%),
+    radial-gradient(1000px 600px at 5% 15%, rgba(202, 228, 255, 0.65), transparent 55%), */
     var(--paper);
 }
 

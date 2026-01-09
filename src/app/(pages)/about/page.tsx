@@ -1,5 +1,8 @@
 'use client'
 
+import ReviewsSection from '@/src/sections/Reviews-section'
+
+
 export default function About(){
     return (
         <section className="mt-24 h-[80vh]">
@@ -46,8 +49,8 @@ export default function About(){
                                                                     {/* отзывы     */}
 
 
-            <article className="m-10 h-30 bg-blue-300 py-[5%] text-center">
-                <p>здесь когда нибудь будут отзывы... когда разберусь с фронтом и бэком</p>    
+            <article className="w-[80%] m-auto my-10">
+                      <ReviewsSection />
             </article>
 
             <article className="w-[80%] flex m-auto">

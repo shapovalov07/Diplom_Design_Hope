@@ -5,7 +5,7 @@ import ReviewsSection from '@/src/sections/Reviews-section'
 
 export default function About(){
     return (
-        <section className="mt-24 h-[80vh]">
+        <section className="mt-24 pb-20">
 
             <div className="w-[80%] m-auto">
                 <h1 className="text-right text-[128px] leading-none text-[#D9D9D9]">
@@ -55,7 +55,7 @@ export default function About(){
 
             <article className="w-[80%] flex m-auto">
                 <div>
-                    <h2>давайте  знакомиться</h2>
+                    <h2 className='text-[64px] uppercase text-[#D9D9D9] text-right mb-10'>давайте  знакомиться</h2>
                     <div className="">
                         <div className="flex gap-[3%] mb-20">
 

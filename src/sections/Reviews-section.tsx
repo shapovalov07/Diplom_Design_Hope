@@ -21,6 +21,7 @@ export default function ReviewsSection() {
   const [isModalVisible, setIsModalVisible] = useState(false)
   const closeTimerRef = useRef<number | null>(null)
   const [startIndex, setStartIndex] = useState(0)
+  const [expandedIds, setExpandedIds] = useState<string[]>([])
 
   async function load() {
     const res = await fetch('/api/reviews', { cache: 'no-store' })
@@ -148,7 +149,16 @@ export default function ReviewsSection() {
     setStartIndex((prev) => Math.min(maxIndex, prev + 1))
   }
 
+  function toggleReview(id: string) {
+    setExpandedIds((prev) => (
+      prev.includes(id)
+        ? prev.filter((item) => item !== id)
+        : [...prev, id]
+    ))
+  }
+
   const stars = (n: number) => '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n)
+  const previewLimit = 200
 
   return (
     <section className="relative">
@@ -230,20 +240,34 @@ export default function ReviewsSection() {
             </div>
           ) : (
             visibleReviews.map((r) => (
+              (() => {
+                const isLong = r.text.length > previewLimit
+                const isExpanded = expandedIds.includes(r.id)
+                const displayText = isLong && !isExpanded
+                  ? `${r.text.slice(0, previewLimit).trimEnd()}...`
+                  : r.text
+
+                return (
               <article
                 key={r.id}
-                className="rounded-3xl border border-black/10 bg-white p-6 shadow-[0_10px_30px_rgba(0,0,0,0.06)]"
+                className={[
+                  'group relative overflow-hidden rounded-3xl border border-black/10 bg-white p-6',
+                  'shadow-[0_14px_40px_rgba(0,0,0,0.08)] transition hover:-translate-y-1 hover:shadow-[0_22px_60px_rgba(0,0,0,0.12)]',
+                  "before:absolute before:inset-x-0 before:top-0 before:h-[3px] before:bg-[linear-gradient(90deg,#B5292A_0%,#E1A34B_60%,rgba(0,0,0,0)_100%)] before:content-['']",
+                  isLong ? 'cursor-pointer' : '',
+                ].join(' ')}
+                onClick={isLong ? () => toggleReview(r.id) : undefined}
+                onKeyDown={isLong ? (event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    toggleReview(r.id)
+                  }
+                } : undefined}
+                role={isLong ? 'button' : undefined}
+                tabIndex={isLong ? 0 : undefined}
+                aria-expanded={isLong ? isExpanded : undefined}
               >
-                <p className="text-sm leading-relaxed text-neutral-700 break-words whitespace-pre-wrap">
-                  {r.text}
-                </p>
-                <div className="mt-4 text-sm tracking-[0.2em] text-yellow-400">
-                  {stars(r.rating).slice(0, r.rating)}
-                  <span className="text-neutral-300">
-                    {stars(r.rating).slice(r.rating)}
-                  </span>
-                </div>
-                <div className="mt-5 flex items-center gap-3">
+                <div className="flex items-center gap-3">
                   <div className="h-11 w-11 rounded-full overflow-hidden border border-black/10 bg-black/5 grid place-items-center shrink-0">
                     {r.avatarUrl ? (
                       <img
@@ -264,7 +288,25 @@ export default function ReviewsSection() {
                     </div>
                   </div>
                 </div>
+                <div className="mt-4 text-sm tracking-[0.2em] text-yellow-400">
+                  {stars(r.rating).slice(0, r.rating)}
+                  <span className="text-neutral-300">
+                    {stars(r.rating).slice(r.rating)}
+                  </span>
+                </div>
+                <div className="mt-4 rounded-2xl bg-black/[0.04] p-4">
+                  <p className="text-sm leading-relaxed text-neutral-700 break-words whitespace-pre-wrap">
+                    {displayText}
+                  </p>
+                </div>
+                {isLong && (
+                  <div className="mt-3 text-xs text-neutral-500">
+                    {isExpanded ? 'Свернуть' : 'Читать полностью'}
+                  </div>
+                )}
               </article>
+                )
+              })()
             ))
           )}
         </div>

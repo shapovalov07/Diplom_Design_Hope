@@ -23,9 +23,9 @@ export default function Stages() {
                     </div>
                 </div>
             </div>
-
+                                                                                    {/* //////////////здесь редактируется сетка */}
             {/* Контент поверх сетки */}
-            <div className="relative z-20">
+            <div className="lg:min-h-[110vh] relative z-20">
                 <div className="container mx-auto max-w-screen-xl">
                     <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
                         <div className="text-center lg:text-left lg:pr-16">

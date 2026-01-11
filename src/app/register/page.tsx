@@ -51,7 +51,7 @@ export default function RegisterPage() {
           <input
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            placeholder="ФИО"
+            placeholder="Имя"
             className="h-11 rounded-2xl border border-black/15 px-4 outline-none focus:ring-2 focus:ring-black/10"
           />
 

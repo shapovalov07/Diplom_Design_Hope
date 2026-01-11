@@ -11,7 +11,19 @@ type Item = {
   createdAt: string
 }
 
-export default function PortfolioSection() {
+type PortfolioSectionProps = {
+  limit?: number
+  showAllLink?: boolean
+  allLinkHref?: string
+  allLinkLabel?: string
+}
+
+export default function PortfolioSection({
+  limit,
+  showAllLink = false,
+  allLinkHref = '/portfolio',
+  allLinkLabel = 'Все портфолио',
+}: PortfolioSectionProps) {
   const [items, setItems] = useState<Item[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -24,11 +36,13 @@ export default function PortfolioSection() {
     })()
   }, [])
 
+  const visibleItems = limit ? items.slice(0, limit) : items
+
   return (
-    <section className="relative">
+    <section className="relative w-[80%] m-auto px-6 py-12">
       <div>
         <h1 className="text-right text-[128px] leading-none text-[#D9D9D9]">
-          Портфолио
+          ПОРТФОЛИО
         </h1>
         <h2 className="text-3xl font-semibold tracking-tight">
           Наши последние работы
@@ -38,11 +52,11 @@ export default function PortfolioSection() {
       <div className="relative mt-10">
         {loading ? (
           <div className="text-sm text-neutral-500">Загрузка…</div>
-        ) : items.length === 0 ? (
+        ) : visibleItems.length === 0 ? (
           <div className="text-sm text-neutral-500">Пока нет опубликованных работ.</div>
         ) : (
-          <div className="grid gap-8 md:grid-cols-2">
-            {items.map((item) => (
+          <div className="grid gap-8 sm:grid-cols-2">
+            {visibleItems.map((item) => (
               <a
                 key={item.id}
                 href={item.projectUrl}
@@ -64,7 +78,7 @@ export default function PortfolioSection() {
                       </div>
                     )}
 
-                    {/* маленькая подсказка "↗" при наведении */}
+                    
                     <div className="pointer-events-none absolute right-3 top-3 rounded-full border border-white/30 bg-black/40 px-3 py-1 text-xs text-white opacity-0 backdrop-blur transition group-hover:opacity-100">
                       Открыть ↗
                     </div>
@@ -87,6 +101,16 @@ export default function PortfolioSection() {
                 </div>
               </a>
             ))}
+          </div>
+        )}
+        {showAllLink && !loading && (
+          <div className="mt-10 flex justify-center">
+            <a
+              href={allLinkHref}
+              className="rounded-full bg-[#B5292A] px-6 py-3 text-base font-light !text-white transition hover:scale-[1.05] duration-600"
+            >
+              {allLinkLabel}
+            </a>
           </div>
         )}
       </div>

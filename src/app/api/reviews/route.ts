@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/src/lib/prisma'
 import { requireUser } from '@/src/lib/auth'
+import { sendTelegramMessage } from '@/src/lib/telegram'
 
 export async function GET() {
   const reviews = await prisma.review.findMany({
@@ -29,6 +30,17 @@ export async function POST(req: Request) {
         text: String(text).trim(),
       },
     })
+
+    await sendTelegramMessage(
+      [
+        '📝 Новый отзыв',
+        `Автор: ${user.fullName}`,
+        `Email: ${user.email}`,
+        `Оценка: ${r}/5`,
+        `Текст: ${review.text}`,
+        `ID: ${review.id}`,
+      ].join('\n'),
+    )
 
     return NextResponse.json({ review }, { status: 201 })
   } catch {

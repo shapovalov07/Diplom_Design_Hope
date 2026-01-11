@@ -4,6 +4,7 @@
 import FirstP from "@/src/sections/FirstP";
 import Services from "@/src/sections/Services";
 import Stages from "@/src/sections/Stages";
+import PortfolioSection from "@/src/sections/Portfolio-section";
 
 export default function Home() {
     return (
@@ -11,9 +12,7 @@ export default function Home() {
         
         <FirstP />
         <Services />
-        <div className="text-center m-10">
-          <a  href="">Когда разберусь с админкой, здесь будет кусочек портфолио..... хы</a>
-        </div>
+        <PortfolioSection limit={6} showAllLink />
         <Stages />
         
       </>

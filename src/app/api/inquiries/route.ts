@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/src/lib/prisma'
 import { requireUser } from '@/src/lib/auth'
+import { sendTelegramMessage } from '@/src/lib/telegram'
 
 export async function POST(req: Request) {
   try {
@@ -14,11 +15,22 @@ export async function POST(req: Request) {
     const inquiry = await prisma.inquiry.create({
       data: {
         userId: user.id,
-        serviceType,
-        description,
-        fullName: fullName || user.fullName,
+        serviceType: String(serviceType).trim(),
+        description: String(description).trim(),
+        fullName: fullName ? String(fullName).trim() : user.fullName,
       },
     })
+
+    await sendTelegramMessage(
+      [
+        '📬 Новая заявка',
+        `Имя: ${inquiry.fullName}`,
+        `Email: ${user.email}`,
+        `Услуга: ${inquiry.serviceType}`,
+        `Описание: ${inquiry.description}`,
+        `ID: ${inquiry.id}`,
+      ].join('\n'),
+    )
 
     return NextResponse.json({ inquiry }, { status: 201 })
   } catch {

@@ -2,7 +2,7 @@ import { requireAdmin } from '@/src/lib/auth'
 import AdminPanel from './panel'
 
 export default async function AdminPage() {
-  await requireAdmin()
+  const user = await requireAdmin()
 
   return (
     <div className="p-6">
@@ -10,7 +10,7 @@ export default async function AdminPage() {
         Приветствую тебя мой дорогой администратор, хорошей тебе работы ;)
       </h1>
 
-      <AdminPanel />
+      <AdminPanel user={user} />
     </div>
   )
 }

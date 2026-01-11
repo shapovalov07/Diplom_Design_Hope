@@ -3,30 +3,52 @@ import { prisma } from '@/src/lib/prisma'
 import { requireAdmin } from '@/src/lib/auth'
 
 export async function GET() {
-  await requireAdmin()
-  const items = await prisma.portfolioItem.findMany({ orderBy: { createdAt: 'desc' } })
-  return NextResponse.json({ items })
+  try {
+    await requireAdmin()
+    const items = await prisma.portfolioItem.findMany({ orderBy: { createdAt: 'desc' } })
+    return NextResponse.json({ items })
+  } catch {
+    return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 })
+  }
 }
 
 export async function POST(req: Request) {
-  await requireAdmin()
-  const { title, slug, description, content, coverImageUrl, tags, isPublished } = await req.json()
+  try {
+    await requireAdmin()
 
-  if (!title || !slug) {
-    return NextResponse.json({ error: 'title и slug обязательны' }, { status: 400 })
+    const body = await req.json() as {
+      title?: string
+      projectUrl?: string
+      description?: string | null
+      coverImageUrl?: string | null
+      isPublished?: boolean
+    }
+
+    const { title, projectUrl, description, coverImageUrl, isPublished } = body
+
+    if (!title || !projectUrl) {
+      return NextResponse.json({ error: 'title и projectUrl обязательны' }, { status: 400 })
+    }
+
+    try {
+      new URL(projectUrl)
+    } catch {
+      return NextResponse.json({ error: 'Некорректная ссылка (projectUrl)' }, { status: 400 })
+    }
+
+    const item = await prisma.portfolioItem.create({
+      data: {
+        title: title.trim(),
+        projectUrl: projectUrl.trim(),
+        description: description ?? null,
+        coverImageUrl: coverImageUrl ?? null,
+        isPublished: Boolean(isPublished),
+      },
+    })
+
+    return NextResponse.json({ item }, { status: 201 })
+  } catch (e) {
+    console.error(e)
+    return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 })
   }
-
-  const item = await prisma.portfolioItem.create({
-    data: {
-      title: String(title).trim(),
-      slug: String(slug).trim(),
-      description: description ? String(description) : null,
-      content: content ? String(content) : null,
-      coverImageUrl: coverImageUrl ? String(coverImageUrl) : null,
-      tags: Array.isArray(tags) ? tags.map(String) : [],
-      isPublished: Boolean(isPublished),
-    },
-  })
-
-  return NextResponse.json({ item }, { status: 201 })
 }

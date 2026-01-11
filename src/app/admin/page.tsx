@@ -1,27 +1,16 @@
-import { cookies } from 'next/headers'
-import { jwtVerify } from 'jose'
-import { redirect } from 'next/navigation'
+import { requireAdmin } from '@/src/lib/auth'
 import AdminPanel from './panel'
 
-
-const secret = new TextEncoder().encode(process.env.SESSION_SECRET || 'dev_secret_change_me')
-
 export default async function AdminPage() {
-  const token = (await cookies()).get('session')?.value
-  if (!token) redirect('/login')
-
-  try {
-    const { payload } = await jwtVerify(token, secret)
-    if ((payload as any).role !== 'ADMIN') redirect('/')
-  } catch {
-    redirect('/login')
-  }
+  await requireAdmin()
 
   return (
-    <div style={{ padding: 24 }}>
-      <h1>Админка</h1>
-      <p>Доступ только для ADMIN.</p>
-       <AdminPanel />
+    <div className="p-6">
+      <h1 className="mb-6 text-center text-xl font-semibold">
+        Приветствую тебя мой дорогой администратор, хорошей тебе работы ;)
+      </h1>
+
+      <AdminPanel />
     </div>
   )
 }

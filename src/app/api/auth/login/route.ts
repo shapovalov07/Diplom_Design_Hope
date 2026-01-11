@@ -1,18 +1,15 @@
 import { NextResponse } from 'next/server'
-import bcrypt from 'bcrypt'
 import { prisma } from '@/src/lib/prisma'
-import { createSessionToken } from '@/src/lib/session'
+import bcrypt from 'bcryptjs'
 
 export async function POST(req: Request) {
+  const body = await req.json().catch(() => null)
 
-const SECRET = process.env.SESSION_SECRET
-if (!SECRET) throw new Error('SESSION_SECRET is missing in .env')
-const secret = new TextEncoder().encode(SECRET)
-
-  const { identifier, password } = await req.json()
+  const identifier = String(body?.identifier || '').trim()
+  const password = String(body?.password || '').trim()
 
   if (!identifier || !password) {
-    return NextResponse.json({ error: 'Заполните все поля' }, { status: 400 })
+    return NextResponse.json({ error: 'Заполни данные' }, { status: 400 })
   }
 
   const user = await prisma.user.findFirst({
@@ -20,25 +17,20 @@ const secret = new TextEncoder().encode(SECRET)
   })
 
   if (!user) {
-    return NextResponse.json({ error: 'Неверные данные' }, { status: 401 })
+    return NextResponse.json({ error: 'Пользователь не найден' }, { status: 401 })
   }
 
   const ok = await bcrypt.compare(password, user.passwordHash)
   if (!ok) {
-    return NextResponse.json({ error: 'Неверные данные' }, { status: 401 })
+    return NextResponse.json({ error: 'Неверный пароль' }, { status: 401 })
   }
 
-  const token = await createSessionToken({ userId: user.id, role: user.role })
-
-  const res = NextResponse.json({
-    user: { id: user.id, fullName: user.fullName, email: user.email, role: user.role },
-  })
-
-  res.cookies.set('session', token, {
+  const res = NextResponse.json({ ok: true })
+  res.cookies.set('session', JSON.stringify({ userId: user.id, role: user.role }), {
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
     path: '/',
+    secure: false, // localhost
     maxAge: 60 * 60 * 24 * 7,
   })
 

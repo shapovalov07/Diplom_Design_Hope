@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/src/lib/prisma'
 import { requireAdmin } from '@/src/lib/auth'
 
+export const runtime = 'nodejs'
+
 export async function GET() {
   await requireAdmin()
   const inquiries = await prisma.inquiry.findMany({

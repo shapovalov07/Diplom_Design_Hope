@@ -10,10 +10,20 @@ const globalForPrisma = globalThis as unknown as {
   pool?: pg.Pool
 }
 
+const connectionString =
+  process.env.DATABASE_URL ||
+  (process.env.NODE_ENV !== 'production'
+    ? 'postgresql://postgres:postgres@localhost:5432/diplom_design_hope'
+    : undefined)
+
+if (!connectionString) {
+  throw new Error('DATABASE_URL is missing')
+}
+
 const pool =
   globalForPrisma.pool ??
   new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString,
   })
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.pool = pool

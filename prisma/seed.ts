@@ -1,7 +1,24 @@
-import bcrypt from 'bcrypt'
+import 'dotenv/config'
+import bcrypt from 'bcryptjs'
 import { PrismaClient } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
+import pg from 'pg'
 
-const prisma = new PrismaClient()
+const { Pool } = pg
+
+const connectionString =
+  process.env.DATABASE_URL ||
+  (process.env.NODE_ENV !== 'production'
+    ? 'postgresql://postgres:postgres@localhost:5432/diplom_design_hope'
+    : undefined)
+
+if (!connectionString) {
+  throw new Error('DATABASE_URL is missing')
+}
+
+const pool = new Pool({ connectionString })
+const adapter = new PrismaPg(pool)
+const prisma = new PrismaClient({ adapter })
 
 async function main() {
   const email = 'admin@test.com'

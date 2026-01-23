@@ -1,6 +1,10 @@
 import { SignJWT, jwtVerify } from 'jose'
 
-const secret = new TextEncoder().encode(process.env.SESSION_SECRET || 'dev_secret_change_me')
+const secretValue = process.env.SESSION_SECRET
+if (!secretValue && process.env.NODE_ENV === 'production') {
+  throw new Error('SESSION_SECRET is missing in production')
+}
+const secret = new TextEncoder().encode(secretValue || 'dev_secret_change_me')
 
 export async function createSessionToken(payload: { userId: string; role: string }) {
   return new SignJWT(payload)

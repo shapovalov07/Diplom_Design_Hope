@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/src/lib/prisma'
+import { verifySessionToken } from '@/src/lib/session'
 
 type Session = { userId: string; role?: 'USER' | 'ADMIN' } | null
 
@@ -10,21 +11,14 @@ async function readSession(): Promise<Session> {
   const raw = jar.get('session')?.value
   if (!raw) return null
 
-  // session хранится JSON-строкой
-  if (raw.trim().startsWith('{')) {
-    try {
-      const parsed = JSON.parse(raw)
-      if (parsed?.userId && typeof parsed.userId === 'string') {
-        return { userId: parsed.userId, role: parsed.role }
-      }
-      return null
-    } catch {
-      return null
-    }
+  try {
+    const payload = await verifySessionToken(raw)
+    const role =
+      payload.role === 'ADMIN' || payload.role === 'USER' ? (payload.role as 'ADMIN' | 'USER') : undefined
+    return { userId: String(payload.userId), role }
+  } catch {
+    return null
   }
-
-  // fallback: если вдруг там просто userId
-  return { userId: raw }
 }
 
 export async function getCurrentUser() {

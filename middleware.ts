@@ -2,11 +2,11 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import { jwtVerify } from 'jose'
 
-// const secret = new TextEncoder().encode(process.env.SESSION_SECRET || 'dev_secret_change_me')
-
-const SECRET = process.env.SESSION_SECRET
-if (!SECRET) throw new Error('SESSION_SECRET is missing in .env')
-const secret = new TextEncoder().encode(SECRET)
+const secretValue = process.env.SESSION_SECRET
+if (!secretValue && process.env.NODE_ENV === 'production') {
+  throw new Error('SESSION_SECRET is missing in production')
+}
+const secret = new TextEncoder().encode(secretValue || 'dev_secret_change_me')
 
 
 async function verify(token: string) {

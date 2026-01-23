@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/src/lib/prisma'
 import { requireAdmin } from '@/src/lib/auth'
 
+export const runtime = 'nodejs'
+
 type Ctx = { params: Promise<{ id: string }> }
 
 const allowedStatuses = new Set(['NEW', 'IN_PROGRESS', 'DONE'])

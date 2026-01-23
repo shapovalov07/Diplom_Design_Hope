@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server'
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 import { prisma } from '@/src/lib/prisma'
 
+export const runtime = 'nodejs'
+
 export async function POST(req: Request) {
-  const body = await req.json()
-  const { fullName, email, password } = body
+  const body = await req.json().catch(() => null)
+  const fullName = String(body?.fullName || '').trim()
+  const email = String(body?.email || '').trim().toLowerCase()
+  const password = String(body?.password || '')
 
   if (!fullName || !email || !password) {
     return NextResponse.json({ error: 'Заполните все поля' }, { status: 400 })

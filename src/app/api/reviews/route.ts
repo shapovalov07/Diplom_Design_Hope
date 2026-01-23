@@ -3,6 +3,8 @@ import { prisma } from '@/src/lib/prisma'
 import { requireUser } from '@/src/lib/auth'
 import { sendTelegramMessage } from '@/src/lib/telegram'
 
+export const runtime = 'nodejs'
+
 export async function GET() {
   const reviews = await prisma.review.findMany({
     where: { isApproved: true },

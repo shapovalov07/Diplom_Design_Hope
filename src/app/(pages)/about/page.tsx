@@ -61,7 +61,7 @@ export default function About(){
 
                             <div className="w-[340px]">
                                 <div>
-                                    <img src="/вб.png" alt="" />
+                                    <img src="/team-member.png" alt="" />
                                     <div className="flex h-[40px] bg-red-700 items-center mb-[35px]">
                                         <p className="text-white text-[21px] uppercase">менеджер проектов</p>
                                     </div>
@@ -74,7 +74,7 @@ export default function About(){
 
                             <div className="w-[340px] h-[440px]">
                                 <div>
-                                    <img src="/вб.png" alt="" />
+                                    <img src="/team-member.png" alt="" />
                                     <div className="flex h-[40px] bg-red-700 items-center mb-[35px]">
                                         <p className="text-white text-[21px] uppercase">менеджер проектов</p>
                                     </div>

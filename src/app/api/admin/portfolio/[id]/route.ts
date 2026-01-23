@@ -7,11 +7,12 @@ export const runtime = 'nodejs'
 type Ctx = { params: Promise<{ id: string }> }
 
 export async function PATCH(req: Request, ctx: Ctx) {
-  await requireAdmin()
+  const admin = await requireAdmin()
   const { id } = await ctx.params
   const body = await req.json()
 
   const data: any = {}
+  let current: { isPublished: boolean; publishedById: string | null } | null = null
 
   if (body.title !== undefined) data.title = String(body.title).trim()
   if (body.projectUrl !== undefined) {
@@ -23,7 +24,25 @@ export async function PATCH(req: Request, ctx: Ctx) {
   }
   if (body.description !== undefined) data.description = body.description ? String(body.description) : null
   if (body.coverImageUrl !== undefined) data.coverImageUrl = body.coverImageUrl ? String(body.coverImageUrl) : null
-  if (body.isPublished !== undefined) data.isPublished = Boolean(body.isPublished)
+  if (body.isPublished !== undefined) {
+    const nextPublished = Boolean(body.isPublished)
+    data.isPublished = nextPublished
+
+    current = await prisma.portfolioItem.findUnique({
+      where: { id },
+      select: { isPublished: true, publishedById: true },
+    })
+
+    if (!current) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+
+    if (!nextPublished) {
+      data.publishedById = null
+    } else if (!current.isPublished || !current.publishedById) {
+      data.publishedById = admin.id
+    }
+  }
 
   const item = await prisma.portfolioItem.update({ where: { id }, data })
   return NextResponse.json({ item })

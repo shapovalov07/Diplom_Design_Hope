@@ -309,7 +309,7 @@ export default function ContactsPage() {
             <div className="mt-3 text-lg font-semibold text-[#B5292A]">
               +7 (928) 628-21-04
             </div>
-            <div className="text-lg text-[#B5292A]">team@disign-hope.ru</div>
+            <div className="text-lg text-[#B5292A]">team@design-hope.ru</div>
           </aside>
         </div>
       </div>

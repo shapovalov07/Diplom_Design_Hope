@@ -114,7 +114,10 @@ export default function ServiceBl() {
   })
 
   return (
-    <section ref={container} className="relative bg-[#0a0a0a] py-10">
+    <section
+      ref={container}
+      className="relative bg-[#252525] py-10"
+    >
       <div className="pb-[20vh]"> {/* Добавили отступ снизу, чтобы последняя карточка зафиксировалась */}
         {cards.map((card, i) => {
           // Вычисляем финальный масштаб: чем глубже карта, тем она меньше

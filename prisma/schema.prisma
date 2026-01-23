@@ -16,6 +16,8 @@ model User {
   updatedAt    DateTime  @updatedAt
   inquiries    Inquiry[]
   reviews      Review[]
+  inquiryMessages InquiryMessage[]
+  publishedPortfolioItems PortfolioItem[] @relation("PortfolioPublishedBy")
 }
 
 model PortfolioItem {
@@ -25,8 +27,12 @@ model PortfolioItem {
   description   String?
   coverImageUrl String?
   isPublished   Boolean  @default(false)
+  publishedById String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  publishedBy   User?    @relation("PortfolioPublishedBy", fields: [publishedById], references: [id], onDelete: SetNull)
+
+  @@index([publishedById])
 }
 
 model Review {
@@ -53,9 +59,23 @@ model Inquiry {
   status      InquiryStatus @default(NEW)
   createdAt   DateTime      @default(now())
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages    InquiryMessage[]
 
   @@index([userId])
   @@index([status])
+}
+
+model InquiryMessage {
+  id        String   @id @default(uuid())
+  inquiryId String
+  authorId  String
+  text      String
+  createdAt DateTime @default(now())
+  inquiry   Inquiry  @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([inquiryId])
+  @@index([authorId])
 }
 
 enum UserRole {

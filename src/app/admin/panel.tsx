@@ -1,6 +1,7 @@
 'use client'
 
 import LogoutButton from '@/src/components/LogoutButton'
+import InquiryChat from '@/src/components/InquiryChat'
 import { useEffect, useState } from 'react'
 
 type AdminUser = {
@@ -28,6 +29,7 @@ type PortfolioItem = {
   coverImageUrl: string | null
   isPublished: boolean
   createdAt: string
+  publishedBy?: { id: string; fullName: string; email: string } | null
 }
 
 type Inquiry = {
@@ -70,8 +72,8 @@ export default function AdminPanel({ user }: { user: AdminUser }) {
   const [tab, setTab] = useState<'reviews' | 'portfolio' | 'inquiries' | 'profile'>('reviews')
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-8">
-      <div className="flex flex-wrap gap-2">
+    <div className="mx-auto w-[80%] px-6 py-8">
+      <div className="flex flex-wrap gap-2 rounded-[28px] border border-black/10 bg-white p-2 shadow-[0_12px_30px_rgba(0,0,0,0.08)]">
         <TabButton active={tab === 'reviews'} onClick={() => setTab('reviews')}>
           Отзывы
         </TabButton>
@@ -92,7 +94,7 @@ export default function AdminPanel({ user }: { user: AdminUser }) {
         ) : tab === 'portfolio' ? (
           <AdminPortfolio />
         ) : tab === 'inquiries' ? (
-          <AdminInquiries />
+          <AdminInquiries currentUserId={user.id} />
         ) : (
           <AdminProfile user={user} />
         )}
@@ -114,10 +116,10 @@ function TabButton({
     <button
       onClick={onClick}
       className={[
-        'h-10 rounded-xl px-4 text-sm font-semibold transition',
+        'h-11 rounded-full px-5 text-[11px] font-semibold uppercase tracking-[0.24em] transition',
         active
-          ? 'bg-black text-white'
-          : 'border border-black/15 bg-white text-neutral-900 hover:bg-neutral-50',
+          ? 'bg-[#B5292A] text-white shadow-[0_12px_30px_rgba(181,41,42,0.35)]'
+          : 'border border-black/15 bg-white text-neutral-700 hover:bg-black/5 hover:text-black',
       ].join(' ')}
     >
       {children}
@@ -129,7 +131,7 @@ function Badge({ ok, children }: { ok: boolean; children: React.ReactNode }) {
   return (
     <span
       className={[
-        'inline-flex items-center rounded-full border px-2.5 py-1 text-xs',
+        'inline-flex items-center rounded-full border px-3 py-1 text-[11px] uppercase tracking-[0.2em]',
         ok
           ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-900'
           : 'border-amber-500/30 bg-amber-500/10 text-amber-900',
@@ -150,11 +152,11 @@ function Btn({
   children: React.ReactNode
 }) {
   const base =
-    'h-9 rounded-xl px-3 text-sm font-semibold transition border'
+    'h-9 rounded-full px-4 text-xs font-semibold uppercase tracking-[0.2em] transition border'
   const cls =
     variant === 'danger'
-      ? `${base} border-rose-500/40 text-rose-700 hover:bg-rose-500/10`
-      : `${base} border-black/15 text-neutral-900 hover:bg-neutral-50`
+      ? `${base} border-[#B5292A]/40 text-[#B5292A] hover:bg-[#B5292A]/10`
+      : `${base} border-black/15 bg-white/70 text-neutral-800 hover:bg-black/5`
 
   return (
     <button onClick={onClick} className={cls}>
@@ -165,32 +167,189 @@ function Btn({
 
 function Card({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-3xl border border-black/10 bg-white/80 shadow-[0_18px_50px_rgba(0,0,0,0.08)]">
-      <div className="border-b border-black/5 p-5">
+    <div className="reveal-up overflow-hidden rounded-[32px] border border-black/10 bg-[#F2F2F2] text-sm text-neutral-700 shadow-[0_18px_50px_rgba(0,0,0,0.08)]">
+      <div className="border-b border-black/10 bg-white px-6 py-5">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
-            {subtitle && <p className="mt-1 text-sm text-neutral-500">{subtitle}</p>}
+            <h2 className="text-2xl font-semibold text-[#252525]">{title}</h2>
+            {subtitle && <p className="mt-1 text-xs text-neutral-500">{subtitle}</p>}
           </div>
         </div>
       </div>
-      <div className="p-5">{children}</div>
+      <div className="card-stripe">
+        <div className="p-6 pl-12">{children}</div>
+      </div>
     </div>
   )
 }
 
 function AdminProfile({ user }: { user: AdminUser }) {
+  const normalizedName = user.fullName.trim()
+  const normalizedEmail = user.email.trim().toLowerCase()
+  const [fullName, setFullName] = useState(normalizedName)
+  const [email, setEmail] = useState(normalizedEmail)
+  const [saving, setSaving] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null)
+  const [savedState, setSavedState] = useState({
+    fullName: normalizedName,
+    email: normalizedEmail,
+  })
+
+  const isDirty =
+    fullName.trim() !== savedState.fullName || email.trim().toLowerCase() !== savedState.email
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (saving || !isEditing || !isDirty) return
+
+    setSaving(true)
+    setMsg(null)
+
+    const payload = {
+      fullName: fullName.trim(),
+      email: email.trim().toLowerCase(),
+    }
+
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      })
+
+      const data = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        setMsg({ type: 'err', text: data?.error || 'Ошибка сохранения' })
+        setSaving(false)
+        return
+      }
+
+      const nextName = data?.user?.fullName || payload.fullName
+      const nextEmail = data?.user?.email || payload.email
+
+      setSavedState({ fullName: nextName, email: nextEmail })
+      setFullName(nextName)
+      setEmail(nextEmail)
+      setMsg({ type: 'ok', text: 'Данные сохранены' })
+      setIsEditing(false)
+    } catch {
+      setMsg({ type: 'err', text: 'Ошибка сети. Попробуйте ещё раз.' })
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
-    <Card title="Профиль администратора" subtitle="Информация о аккаунте и выход.">
-      <div className="text-sm text-neutral-700">
-        <div><b>ФИО:</b> {user.fullName}</div>
-        <div><b>Email:</b> {user.email}</div>
-        <div><b>Роль:</b> {user.role}</div>
+    <div className="reveal-up overflow-hidden rounded-[32px] border border-black/10 bg-[#F2F2F2] text-sm text-neutral-700 shadow-[0_18px_50px_rgba(0,0,0,0.08)]">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-black/10 bg-[#252525] px-6 py-5 text-white">
+        <div>
+          <div className="text-[11px] uppercase tracking-[0.4em] text-white/60">админ</div>
+          <h2 className="text-2xl font-semibold">Профиль</h2>
+        </div>
+        <span className="rounded-full border border-white/25 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-white/80">
+          роль: {user.role === 'ADMIN' ? 'admin' : 'user'}
+        </span>
       </div>
-      <LogoutButton className="mt-5 bg-[#B5292A]">
-        Выйти из аккаунта
-      </LogoutButton>
-    </Card>
+
+      <form onSubmit={handleSubmit} className="card-stripe">
+        <div className="grid gap-5 p-6 pl-12">
+          <div className="grid gap-4">
+            <label className="grid w-full gap-2 sm:w-1/2">
+              <span className="text-xs uppercase tracking-[0.2em] text-neutral-500">ФИО</span>
+              <input
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Ваше имя"
+                disabled={!isEditing}
+                className={[
+                  'h-11 rounded-2xl border px-4 text-sm outline-none transition',
+                  isEditing
+                    ? 'border-black/15 bg-white text-neutral-900 focus:border-black/40'
+                    : 'border-black/10 bg-white/40 text-neutral-500',
+                ].join(' ')}
+              />
+            </label>
+            <label className="grid w-full gap-2 sm:w-1/2">
+              <span className="text-xs uppercase tracking-[0.2em] text-neutral-500">Email</span>
+              <input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                type="email"
+                disabled={!isEditing}
+                className={[
+                  'h-11 rounded-2xl border px-4 text-sm outline-none transition',
+                  isEditing
+                    ? 'border-black/15 bg-white text-neutral-900 focus:border-black/40'
+                    : 'border-black/10 bg-white/40 text-neutral-500',
+                ].join(' ')}
+              />
+            </label>
+          </div>
+
+          {msg && (
+            <div
+              className={[
+                'rounded-2xl border px-4 py-3 text-sm',
+                msg.type === 'ok'
+                  ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-900'
+                  : 'border-rose-500/30 bg-rose-500/10 text-rose-900',
+              ].join(' ')}
+            >
+              {msg.text}
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center gap-3">
+            {!isEditing ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMsg(null)
+                    setIsEditing(true)
+                  }}
+                  className="h-11 rounded-full bg-[#B5292A] px-6 text-sm font-semibold text-white transition hover:scale-[1.02]"
+                >
+                  Редактировать данные
+                </button>
+                <LogoutButton className="bg-[#252525]">
+                  Выйти из аккаунта
+                </LogoutButton>
+              </>
+            ) : (
+              <>
+                <button
+                  type="submit"
+                  disabled={saving || !isDirty}
+                  className="h-11 rounded-full bg-[#B5292A] px-6 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {saving ? 'Сохранение…' : 'Сохранить'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFullName(savedState.fullName)
+                    setEmail(savedState.email)
+                    setMsg(null)
+                    setIsEditing(false)
+                  }}
+                  className="h-11 rounded-full border border-black/15 px-6 text-sm font-semibold text-neutral-900 hover:bg-white/70"
+                >
+                  Отменить
+                </button>
+                <LogoutButton className="bg-[#252525]">
+                  Выйти из аккаунта
+                </LogoutButton>
+              </>
+            )}
+          </div>
+        </div>
+      </form>
+    </div>
   )
 }
 
@@ -208,15 +367,28 @@ function StatusBadge({ status }: { status: Inquiry['status'] }) {
   }
 
   return (
-    <span className={['inline-flex items-center rounded-full border px-2.5 py-1 text-xs', styles[status]].join(' ')}>
+    <span
+      className={[
+        'inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] uppercase tracking-[0.2em]',
+        styles[status],
+      ].join(' ')}
+    >
       {labels[status]}
     </span>
   )
 }
 
-function AdminInquiries() {
+function formatTimestamp(value: string) {
+  const date = new Date(value)
+  const day = date.toLocaleDateString()
+  const time = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+  return `${day} ${time}`
+}
+
+function AdminInquiries({ currentUserId }: { currentUserId: string }) {
   const [items, setItems] = useState<Inquiry[]>([])
   const [loading, setLoading] = useState(false)
+  const [openChatId, setOpenChatId] = useState<string | null>(null)
 
   async function load() {
     setLoading(true)
@@ -312,6 +484,9 @@ function AdminInquiries() {
                     <option value="IN_PROGRESS">В работе</option>
                     <option value="DONE">Закрыта</option>
                   </select>
+                  <Btn onClick={() => setOpenChatId(openChatId === item.id ? null : item.id)}>
+                    {openChatId === item.id ? 'Скрыть чат' : 'Открыть чат'}
+                  </Btn>
                   <Btn variant="danger" onClick={() => del(item.id)}>Удалить</Btn>
                 </div>
               </div>
@@ -319,6 +494,10 @@ function AdminInquiries() {
               <div className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-neutral-800">
                 {item.description}
               </div>
+
+              {openChatId === item.id && (
+                <InquiryChat inquiryId={item.id} currentUserId={currentUserId} />
+              )}
             </div>
           ))
         )}
@@ -868,9 +1047,9 @@ function AdminPortfolio() {
         </button>
       </div>
 
-      <div className="mt-4 grid gap-3">
+      <div className="mt-6 grid gap-8 sm:grid-cols-2">
         {items.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-black/15 bg-neutral-50 p-6 text-center text-sm text-neutral-600">
+          <div className="rounded-2xl border border-dashed border-black/15 bg-white/70 p-6 text-center text-sm text-neutral-600 sm:col-span-2">
             Работ пока нет.
           </div>
         ) : (
@@ -878,61 +1057,73 @@ function AdminPortfolio() {
             const isEditing = editingId === p.id
 
             return (
-              <div key={p.id} className="rounded-2xl border border-black/10 bg-white p-4 shadow-sm">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <div className="font-semibold truncate">{p.title}</div>
-                      <Badge ok={p.isPublished}>{p.isPublished ? 'Published' : 'Draft'}</Badge>
+              <div key={p.id} className="grid gap-3">
+                {!isEditing && (
+                  <>
+                    <a
+                      href={p.projectUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group block"
+                    >
+                      <div className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-[0_10px_40px_rgba(0,0,0,0.06)] transition hover:shadow-[0_18px_70px_rgba(0,0,0,0.10)]">
+                        <div className="relative aspect-[16/9] bg-black/5">
+                          {p.coverImageUrl ? (
+                            <img
+                              src={p.coverImageUrl}
+                              alt={p.title}
+                              className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-sm text-neutral-500">
+                              Нет обложки
+                            </div>
+                          )}
+
+                          <div className="pointer-events-none absolute right-3 top-3 rounded-full border border-white/30 bg-black/40 px-3 py-1 text-xs text-white opacity-0 backdrop-blur transition group-hover:opacity-100">
+                            Открыть ↗
+                          </div>
+                        </div>
+
+                        <div className="px-5 pb-5">
+                          <div className="pt-4">
+                            <h3 className="text-lg font-semibold leading-snug tracking-tight">
+                              {p.title}
+                            </h3>
+
+                            {p.description && (
+                              <p className="mt-3 line-clamp-2 text-sm text-neutral-600">
+                                {p.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </a>
+
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge ok={p.isPublished}>{p.isPublished ? 'Published' : 'Draft'}</Badge>
+                        <div className="text-xs text-neutral-500">
+                          {formatTimestamp(p.createdAt)} · Опубликовал: {p.publishedBy?.fullName || '—'}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        <Btn onClick={() => togglePublish(p.id, !p.isPublished)}>
+                          {p.isPublished ? 'Снять' : 'Опубликовать'}
+                        </Btn>
+                        <Btn onClick={() => startEdit(p)}>Редактировать</Btn>
+                        <Btn variant="danger" onClick={() => del(p.id)}>
+                          Удалить
+                        </Btn>
+                      </div>
                     </div>
-                    <div className="mt-1 text-xs text-neutral-500">
-                      {new Date(p.createdAt).toLocaleString()}
-                    </div>
-
-                    <div className="mt-2 text-sm">
-                      <a
-                        href={p.projectUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-neutral-900 underline decoration-black/20 underline-offset-4 hover:decoration-black/40"
-                      >
-                        Открыть проект ↗
-                      </a>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    <Btn onClick={() => togglePublish(p.id, !p.isPublished)}>
-                      {p.isPublished ? 'Снять' : 'Опубликовать'}
-                    </Btn>
-                    {isEditing ? (
-                      <>
-                        <Btn onClick={saveEdit}>{savingEdit ? 'Сохраняю…' : 'Сохранить'}</Btn>
-                        <Btn onClick={cancelEdit}>Отмена</Btn>
-                      </>
-                    ) : (
-                      <Btn onClick={() => startEdit(p)}>Редактировать</Btn>
-                    )}
-                    <Btn variant="danger" onClick={() => del(p.id)}>
-                      Удалить
-                    </Btn>
-                  </div>
-                </div>
-
-                {!isEditing && p.coverImageUrl && (
-                  <div className="mt-4 overflow-hidden rounded-2xl border border-black/10 bg-black/5">
-                    <img src={p.coverImageUrl} alt={p.title} className="h-48 w-full object-cover" />
-                  </div>
-                )}
-
-                {!isEditing && p.description && (
-                  <div className="mt-3 text-sm leading-relaxed text-neutral-800 whitespace-pre-wrap">
-                    {p.description}
-                  </div>
+                  </>
                 )}
 
                 {isEditing && (
-                  <div className="mt-4 grid gap-3 rounded-2xl border border-black/10 bg-neutral-50 p-4">
+                  <div className="grid gap-3 rounded-2xl border border-black/10 bg-white/80 p-4 shadow-[0_10px_30px_rgba(0,0,0,0.08)]">
                     <label className="grid gap-2 text-sm text-neutral-700">
                       Название
                       <input
@@ -1025,6 +1216,14 @@ function AdminPortfolio() {
                         <img src={editDraft.coverImageUrl} alt="Обложка" className="h-40 w-full object-cover" />
                       </div>
                     )}
+
+                    <div className="flex flex-wrap gap-2">
+                      <Btn onClick={saveEdit}>{savingEdit ? 'Сохраняю…' : 'Сохранить'}</Btn>
+                      <Btn onClick={cancelEdit}>Отмена</Btn>
+                      <Btn variant="danger" onClick={() => del(p.id)}>
+                        Удалить
+                      </Btn>
+                    </div>
                   </div>
                 )}
               </div>

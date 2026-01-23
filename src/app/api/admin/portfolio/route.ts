@@ -7,7 +7,14 @@ export const runtime = 'nodejs'
 export async function GET() {
   try {
     await requireAdmin()
-    const items = await prisma.portfolioItem.findMany({ orderBy: { createdAt: 'desc' } })
+    const items = await prisma.portfolioItem.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        publishedBy: {
+          select: { id: true, fullName: true, email: true },
+        },
+      },
+    })
     return NextResponse.json({ items })
   } catch {
     return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 })
@@ -16,7 +23,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    await requireAdmin()
+    const admin = await requireAdmin()
 
     const body = await req.json() as {
       title?: string
@@ -38,13 +45,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Некорректная ссылка (projectUrl)' }, { status: 400 })
     }
 
+    const published = Boolean(isPublished)
+
     const item = await prisma.portfolioItem.create({
       data: {
         title: title.trim(),
         projectUrl: projectUrl.trim(),
         description: description ?? null,
         coverImageUrl: coverImageUrl ?? null,
-        isPublished: Boolean(isPublished),
+        isPublished: published,
+        publishedById: published ? admin.id : null,
       },
     })
 

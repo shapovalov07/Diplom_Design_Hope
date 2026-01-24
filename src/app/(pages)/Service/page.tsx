@@ -22,7 +22,7 @@ export default function ServicePage() {
 
         <div className="relative mx-auto w-[80%] px-6 pt-16 pb-12">
           <div className="reveal-up [animation-duration:1s]   items-end justify-between gap-8">
-            <div className="max-w-2xl">
+            <div className="max-w-5xl">
               <div className="text-xs uppercase tracking-[0.35em] text-[#B5292A]">услуги</div>
               <h1 className="mt-4 text-4xl font-semibold leading-tight text-[#252525] sm:text-6xl">
                 Создаём сайты с характером, которые работают на бизнес
@@ -33,21 +33,21 @@ export default function ServicePage() {
               <div className="mt-6 flex flex-wrap gap-3">
                 <a
                   href="/contacts"
-                  className="rounded-full bg-[#B5292A] px-6 py-3 text-sm font-semibold !text-white transition hover:scale-[1.02]"
+                  className="rounded-full bg-[#B5292A] px-6 py-3 text-sm font-semibold !text-white transition hover:scale-[1.02] duration-500"
                 >
                   Оставить заявку
                 </a>
                 <a
                   href="#service-cards"
                   onClick={handleScroll}
-                  className="rounded-full border border-black/15 px-6 py-3 text-sm font-semibold text-neutral-900 hover:bg-white/70"
+                  className="rounded-full border border-black/15 px-6 py-3 text-sm font-semibold text-neutral-900 hover:rotate-5 duration-500"
                 >
                   Смотреть направления
                 </a>
               </div>
             </div>
 
-            <div className="text-right text-[72px] font-semibold uppercase leading-none text-[#E5E5E5] sm:text-[120px]">
+            <div className="my-10 text-right text-[72px] font-semibold uppercase leading-none text-[#E5E5E5] sm:text-[120px]">
               услуги
             </div>
           </div>

@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+
 
 type MeUser = {
   id: string
@@ -289,19 +291,11 @@ export default function ContactsPage() {
             </p>
 
             <div className="mt-8 flex items-center gap-4">
-              <a
-                href="https://t.me"
-                className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#252525] text-sm font-semibold text-white"
-                aria-label="Telegram"
-              >
-                <span className="text-white">TG</span>
+              <a href="https://t.me" className="block hover:scale-110 duration-300">
+                <Image src="/tg.svg" alt="Telegram" width={50} height={50} />
               </a>
-              <a
-                href="https://wa.me"
-                className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#252525] text-sm font-semibold text-white"
-                aria-label="WhatsApp"
-              >
-                <span className="text-white">WA</span>
+              <a href="https://vk.com" className="block hover:scale-110 duration-300">
+                <Image src="/vk.svg" alt="VK" width={50} height={50} />
               </a>
             </div>
 

@@ -389,6 +389,10 @@ function AdminInquiries({ currentUserId }: { currentUserId: string }) {
   const [items, setItems] = useState<Inquiry[]>([])
   const [loading, setLoading] = useState(false)
   const [openChatId, setOpenChatId] = useState<string | null>(null)
+  const [view, setView] = useState<'active' | 'archive'>('active')
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'NEW' | 'IN_PROGRESS' | 'DONE'>('ALL')
+  const [sortOrder, setSortOrder] = useState<'NEWEST' | 'OLDEST'>('NEWEST')
+  const [searchTerm, setSearchTerm] = useState('')
 
   async function load() {
     setLoading(true)
@@ -435,11 +439,82 @@ function AdminInquiries({ currentUserId }: { currentUserId: string }) {
     load()
   }
 
+  const activeItems = items.filter((item) => item.status !== 'DONE')
+  const archivedItems = items.filter((item) => item.status === 'DONE')
+  const baseItems = view === 'archive' ? archivedItems : activeItems
+  const filteredItems =
+    view === 'archive' || statusFilter === 'ALL'
+      ? baseItems
+      : baseItems.filter((item) => item.status === statusFilter)
+  const normalizedSearch = searchTerm.trim().toLowerCase()
+  const searchedItems = normalizedSearch
+    ? filteredItems.filter((item) => {
+        const text = [
+          item.fullName,
+          item.serviceType,
+          item.description,
+          item.user?.email,
+          formatTimestamp(item.createdAt),
+          item.status === 'NEW' ? 'Новая' : item.status === 'IN_PROGRESS' ? 'В работе' : 'Закрыта',
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase()
+        return text.includes(normalizedSearch)
+      })
+    : filteredItems
+  const visibleItems = [...searchedItems].sort((a, b) => {
+    const aTime = new Date(a.createdAt).getTime()
+    const bTime = new Date(b.createdAt).getTime()
+    return sortOrder === 'NEWEST' ? bTime - aTime : aTime - bTime
+  })
+  const statusOptions: Array<{ value: typeof statusFilter; label: string }> = [
+    { value: 'ALL', label: 'Все' },
+    { value: 'NEW', label: 'Новая' },
+    { value: 'IN_PROGRESS', label: 'В работе' },
+    { value: 'DONE', label: 'Закрыта' },
+  ]
+  const sortOptions: Array<{ value: typeof sortOrder; label: string }> = [
+    { value: 'NEWEST', label: 'Сначала новые' },
+    { value: 'OLDEST', label: 'Сначала старые' },
+  ]
+
+  function highlightMatch(text: string) {
+    if (!normalizedSearch) return text
+    const lowerText = text.toLowerCase()
+    const lowerQuery = normalizedSearch
+    const parts: React.ReactNode[] = []
+    let start = 0
+
+    while (start < text.length) {
+      const idx = lowerText.indexOf(lowerQuery, start)
+      if (idx === -1) {
+        parts.push(text.slice(start))
+        break
+      }
+      if (idx > start) {
+        parts.push(text.slice(start, idx))
+      }
+      parts.push(
+        <mark key={`${idx}-${parts.length}`} className="rounded bg-[#B5292A]/20 px-1">
+          {text.slice(idx, idx + lowerQuery.length)}
+        </mark>,
+      )
+      start = idx + lowerQuery.length
+    }
+
+    return parts
+  }
+
   return (
     <Card title="Заявки" subtitle="Заявки с формы контактов.">
       <div className="flex items-center justify-between gap-4">
         <div className="text-sm text-neutral-500">
-          {loading ? 'Загрузка…' : `Всего: ${items.length}`}
+          {loading
+            ? 'Загрузка…'
+            : view === 'archive'
+            ? `Архив: ${archivedItems.length}`
+            : `Всего: ${activeItems.length}`}
         </div>
         <button
           onClick={load}
@@ -449,28 +524,104 @@ function AdminInquiries({ currentUserId }: { currentUserId: string }) {
         </button>
       </div>
 
+      <div className="mt-4 grid gap-4 rounded-2xl border border-black/10 bg-white/70 p-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="text-xs uppercase tracking-[0.2em] text-neutral-500">Статус</div>
+          <div className="flex flex-wrap gap-2">
+            {view === 'archive' ? (
+              <span className="rounded-full border border-black/15 bg-neutral-100 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-500">
+                Закрыта
+              </span>
+            ) : (
+              statusOptions.map((option) => {
+                const active = statusFilter === option.value
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setStatusFilter(option.value)}
+                    className={[
+                      'h-9 rounded-full px-4 text-[11px] font-semibold uppercase tracking-[0.2em] transition',
+                      active
+                        ? 'bg-[#B5292A] text-white shadow-[0_12px_30px_rgba(181,41,42,0.25)]'
+                        : 'border border-black/15 bg-white text-neutral-700 hover:bg-black/5',
+                    ].join(' ')}
+                  >
+                    {option.label}
+                  </button>
+                )
+              })
+            )}
+          </div>
+
+          <div className="ml-auto w-full sm:w-auto">
+            {/* <div className="text-xs uppercase tracking-[0.2em] text-neutral-500">Поиск</div> */}
+            <input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Поиск по заявкам"
+              className="mt-2 h-9 w-full rounded-full border border-black/15 bg-white px-4 text-xs font-semibold text-neutral-900 outline-none focus:border-black/30 sm:w-64"
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="text-xs uppercase tracking-[0.2em] text-neutral-500">Новизна</div>
+          <div className="flex flex-wrap gap-2">
+            {sortOptions.map((option) => {
+              const active = sortOrder === option.value
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setSortOrder(option.value)}
+                  className={[
+                    'h-9 rounded-full px-4 text-[11px] font-semibold uppercase tracking-[0.2em] transition',
+                    active
+                      ? 'bg-[#252525] text-white'
+                      : 'border border-black/15 bg-white text-neutral-700 hover:bg-black/5',
+                  ].join(' ')}
+                >
+                  {option.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
       <div className="mt-4 grid gap-3">
-        {items.length === 0 ? (
+        {visibleItems.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-black/15 bg-neutral-50 p-6 text-center text-sm text-neutral-600">
-            Заявок пока нет.
+            {normalizedSearch
+              ? 'Ничего не найдено.'
+              : view === 'archive'
+              ? 'Архив пуст.'
+              : 'Заявок пока нет.'}
           </div>
         ) : (
-          items.map((item) => (
+          visibleItems.map((item) => (
             <div key={item.id} className="rounded-2xl border border-black/10 bg-white p-4 shadow-sm">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <div className="font-semibold truncate">{item.fullName}</div>
+                    <div className="font-semibold truncate">{highlightMatch(item.fullName)}</div>
                     <StatusBadge status={item.status} />
                   </div>
                   <div className="mt-1 text-xs text-neutral-500">
-                    {new Date(item.createdAt).toLocaleString()}
+                    {highlightMatch(formatTimestamp(item.createdAt))}
                   </div>
                   <div className="mt-2 text-sm text-neutral-700">
-                    <span className="font-semibold">Услуга:</span> {item.serviceType}
+                    <span className="font-semibold">Услуга:</span> {highlightMatch(item.serviceType)}
                   </div>
                   <div className="mt-1 text-sm text-neutral-500">
-                    {item.user?.email ? `Email: ${item.user.email}` : 'Email: —'}
+                    {item.user?.email ? (
+                      <>
+                        Email: {highlightMatch(item.user.email)}
+                      </>
+                    ) : (
+                      'Email: —'
+                    )}
                   </div>
                 </div>
 
@@ -492,7 +643,7 @@ function AdminInquiries({ currentUserId }: { currentUserId: string }) {
               </div>
 
               <div className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-neutral-800">
-                {item.description}
+                {highlightMatch(item.description)}
               </div>
 
               {openChatId === item.id && (
@@ -500,6 +651,25 @@ function AdminInquiries({ currentUserId }: { currentUserId: string }) {
               )}
             </div>
           ))
+        )}
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={() => {
+            setView((prev) => (prev === 'archive' ? 'active' : 'archive'))
+            setOpenChatId(null)
+            setStatusFilter('ALL')
+          }}
+          className="h-10 rounded-full border border-black/15 px-5 text-xs font-semibold uppercase tracking-[0.2em] text-neutral-900 hover:bg-neutral-50"
+        >
+          {view === 'archive' ? 'Вернуться к заявкам' : 'Перейти в архив'}
+        </button>
+        {view === 'active' && archivedItems.length > 0 && (
+          <div className="text-xs text-neutral-500">
+            Закрытых заявок: {archivedItems.length}
+          </div>
         )}
       </div>
     </Card>

@@ -16,24 +16,39 @@ const connectionString =
     ? 'postgresql://postgres:postgres@localhost:5432/diplom_design_hope'
     : undefined)
 
+const isBuild = process.env.NEXT_PHASE === 'phase-production-build'
+
+let prisma: PrismaClient
+
 if (!connectionString) {
-  throw new Error('DATABASE_URL is missing')
+  if (isBuild) {
+    // Avoid failing Next.js build when DATABASE_URL is only available at runtime.
+    prisma = new Proxy({} as PrismaClient, {
+      get() {
+        throw new Error('DATABASE_URL is missing')
+      },
+    })
+  } else {
+    throw new Error('DATABASE_URL is missing')
+  }
+} else {
+  const pool =
+    globalForPrisma.pool ??
+    new Pool({
+      connectionString,
+    })
+
+  if (process.env.NODE_ENV !== 'production') globalForPrisma.pool = pool
+
+  const adapter = new PrismaPg(pool)
+
+  prisma =
+    globalForPrisma.prisma ??
+    new PrismaClient({
+      adapter,
+    })
+
+  if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 }
 
-const pool =
-  globalForPrisma.pool ??
-  new Pool({
-    connectionString,
-  })
-
-if (process.env.NODE_ENV !== 'production') globalForPrisma.pool = pool
-
-const adapter = new PrismaPg(pool)
-
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    adapter,
-  })
-
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+export { prisma }

@@ -14,6 +14,7 @@ type Review = {
 export default function ReviewsSection() {
   const [reviews, setReviews] = useState<Review[]>([])
   const [rating, setRating] = useState(5)
+  const [hoverRating, setHoverRating] = useState<number | null>(null)
   const [text, setText] = useState('')
   const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null)
   const [loading, setLoading] = useState(false)
@@ -358,25 +359,38 @@ export default function ReviewsSection() {
               <div className="grid gap-4">
                 <label className="grid gap-2">
                   <span className="text-sm text-neutral-700">Оценка</span>
-                  <div className="grid gap-3 sm:grid-cols-[180px_1fr] sm:items-center">
-                    <select
-                      value={rating}
-                      onChange={(e) => setRating(Number(e.target.value))}
-                      className="h-11 w-full rounded-2xl border border-black/15 bg-white px-3 outline-none focus:ring-2 focus:ring-black/10"
-                    >
-                      {[5, 4, 3, 2, 1].map((v) => (
-                        <option key={v} value={v}>
-                          {v} {v === 1 ? 'звезда' : v < 5 ? 'звезды' : 'звёзд'}
-                        </option>
-                      ))}
-                    </select>
-
+                  <div className="flex flex-wrap items-center gap-4">
                     <div
-                      className="text-sm tracking-[0.2em] text-yellow-400 select-none"
-                      aria-label={`Рейтинг: ${rating} из 5`}
+                      className="flex items-center gap-1"
+                      role="radiogroup"
+                      aria-label="Оценка"
                     >
-                      {'★★★★★'.slice(0, rating)}
-                      <span className="opacity-30">{'★★★★★'.slice(rating)}</span>
+                      {Array.from({ length: 5 }, (_, index) => {
+                        const value = index + 1
+                        const active = (hoverRating ?? rating) >= value
+                        return (
+                          <button
+                            key={value}
+                            type="button"
+                            role="radio"
+                            aria-checked={rating === value}
+                            aria-label={`${value} из 5`}
+                            onClick={() => setRating(value)}
+                            onMouseEnter={() => setHoverRating(value)}
+                            onMouseLeave={() => setHoverRating(null)}
+                            onFocus={() => setHoverRating(value)}
+                            onBlur={() => setHoverRating(null)}
+                            className="text-2xl transition-transform duration-150 hover:scale-110"
+                          >
+                            <span className={active ? 'text-yellow-400' : 'text-yellow-400/30'}>
+                              ★
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                    <div className="text-sm text-neutral-500" aria-live="polite">
+                      {rating} из 5
                     </div>
                   </div>
                 </label>

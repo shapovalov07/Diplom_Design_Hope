@@ -10,6 +10,8 @@ import {
   rateLimitErrorResponse,
 } from '@/src/lib/security'
 
+export const runtime = 'nodejs'
+
 type Ctx = { params: Promise<{ id: string }> }
 
 export async function PATCH(req: Request, ctx: Ctx) {

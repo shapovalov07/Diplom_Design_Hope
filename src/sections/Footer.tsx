@@ -5,7 +5,7 @@ export default function Footer() {
     <footer className="mt-20 border-t border-black/10 bg-white">
       <div className="mx-auto w-[80%] px-6 py-14">
         <div className="flex flex-col items-center text-center">
-          <img src="(～￣▽￣)～.svg" alt="" />
+          <img src="/footer-hello.svg" alt="" />
           <h2 className="mt-5 text-3xl font-semibold tracking-tight text-[#252525] sm:text-4xl">
             ДО СКОРОГО!
           </h2>

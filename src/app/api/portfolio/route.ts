@@ -38,10 +38,17 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/src/lib/prisma'
 
+export const runtime = 'nodejs'
+
 export async function GET() {
-  const items = await prisma.portfolioItem.findMany({
-    where: { isPublished: true },
-    orderBy: { createdAt: 'desc' },
-  })
-  return NextResponse.json({ items })
+  try {
+    const items = await prisma.portfolioItem.findMany({
+      where: { isPublished: true },
+      orderBy: { createdAt: 'desc' },
+    })
+    return NextResponse.json({ items })
+  } catch (error) {
+    console.error('Public portfolio API error:', error)
+    return NextResponse.json({ items: [], error: 'INTERNAL_ERROR' }, { status: 500 })
+  }
 }

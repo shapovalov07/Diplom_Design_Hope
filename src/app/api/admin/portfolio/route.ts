@@ -10,6 +10,8 @@ import {
   rateLimitErrorResponse,
 } from '@/src/lib/security'
 
+export const runtime = 'nodejs'
+
 export async function GET() {
   try {
     await requireApiAdmin()

@@ -11,6 +11,8 @@ import {
   rateLimitErrorResponse,
 } from '@/src/lib/security'
 
+export const runtime = 'nodejs'
+
 export async function GET() {
   const reviews = await prisma.review.findMany({
     where: { isApproved: true },

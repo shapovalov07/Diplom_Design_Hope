@@ -9,6 +9,8 @@ import {
   rateLimitErrorResponse,
 } from '@/src/lib/security'
 
+export const runtime = 'nodejs'
+
 export async function POST(req: Request) {
   const rl = checkRateLimit(req, {
     bucket: 'inquiries:create',

@@ -26,14 +26,33 @@ export default function PortfolioSection({
 }: PortfolioSectionProps) {
   const [items, setItems] = useState<Item[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    let active = true
     ;(async () => {
-      const res = await fetch('/api/portfolio', { cache: 'no-store' })
-      const data = await res.json()
-      setItems(data.items || [])
-      setLoading(false)
+      try {
+        const res = await fetch('/api/portfolio', { cache: 'no-store' })
+        if (!res.ok) {
+          const text = await res.text()
+          throw new Error(text ? `HTTP ${res.status}: ${text}` : `HTTP ${res.status}`)
+        }
+        const data = (await res.json()) as { items?: Item[] }
+        if (!active) return
+        setItems(Array.isArray(data.items) ? data.items : [])
+        setError(null)
+      } catch (fetchError) {
+        console.error('Portfolio API error:', fetchError)
+        if (!active) return
+        setItems([])
+        setError('Не удалось загрузить портфолио.')
+      } finally {
+        if (active) setLoading(false)
+      }
     })()
+    return () => {
+      active = false
+    }
   }, [])
 
   const visibleItems = limit ? items.slice(0, limit) : items
@@ -52,6 +71,8 @@ export default function PortfolioSection({
       <div className="relative mt-10">
         {loading ? (
           <div className="text-sm text-neutral-500">Загрузка…</div>
+        ) : error ? (
+          <div className="text-sm text-rose-600">{error}</div>
         ) : visibleItems.length === 0 ? (
           <div className="text-sm text-neutral-500">Пока нет опубликованных работ.</div>
         ) : (
@@ -103,7 +124,7 @@ export default function PortfolioSection({
             ))}
           </div>
         )}
-        {showAllLink && !loading && (
+        {showAllLink && !loading && !error && (
           <div className="mt-10 flex justify-center">
             <a
               href={allLinkHref}

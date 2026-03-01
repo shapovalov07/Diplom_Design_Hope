@@ -42,6 +42,31 @@ type Inquiry = {
   user?: { fullName: string; email: string } | null
 }
 
+async function uploadCover(selectedFile: File) {
+  const form = new FormData()
+  form.append('file', selectedFile)
+
+  const upRes = await fetch('/api/upload', {
+    method: 'POST',
+    credentials: 'include',
+    body: form,
+  })
+
+  const upText = await upRes.text()
+  let upData: any = null
+  try {
+    upData = upText ? JSON.parse(upText) : null
+  } catch {
+    upData = null
+  }
+
+  if (!upRes.ok) {
+    return { ok: false, error: upData?.error || 'Ошибка загрузки файла' }
+  }
+
+  return { ok: true, url: upData?.url || null }
+}
+
 export default function AdminPanel({ user }: { user: AdminUser }) {
   const [tab, setTab] = useState<'reviews' | 'portfolio' | 'inquiries' | 'profile'>('reviews')
 

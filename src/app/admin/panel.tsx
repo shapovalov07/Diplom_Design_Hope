@@ -2,6 +2,7 @@
 
 import LogoutButton from '@/src/components/LogoutButton'
 import { useEffect, useState } from 'react'
+import { withCsrfHeaders } from '@/src/lib/csrf-client'
 
 type AdminUser = {
   id: string
@@ -223,35 +224,10 @@ function AdminInquiries() {
     load()
   }, [])
 
-  async function uploadCover(selectedFile: File) {
-    const form = new FormData()
-    form.append('file', selectedFile)
-
-    const upRes = await fetch('/api/upload', {
-      method: 'POST',
-      credentials: 'include',
-      body: form,
-    })
-
-    const upText = await upRes.text()
-    let upData: any = null
-    try {
-      upData = upText ? JSON.parse(upText) : null
-    } catch {
-      upData = null
-    }
-
-    if (!upRes.ok) {
-      return { ok: false, error: upData?.error || 'Ошибка загрузки файла' }
-    }
-
-    return { ok: true, url: upData?.url || null }
-  }
-
   async function updateStatus(id: string, status: Inquiry['status']) {
     await fetch(`/api/admin/inquiries/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withCsrfHeaders({ 'Content-Type': 'application/json' }),
       credentials: 'include',
       body: JSON.stringify({ status }),
     })
@@ -259,7 +235,11 @@ function AdminInquiries() {
   }
 
   async function del(id: string) {
-    await fetch(`/api/admin/inquiries/${id}`, { method: 'DELETE', credentials: 'include' })
+    await fetch(`/api/admin/inquiries/${id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: withCsrfHeaders(),
+    })
     load()
   }
 
@@ -375,7 +355,7 @@ function AdminReviews() {
   async function approve(id: string, isApproved: boolean) {
     await fetch(`/api/admin/reviews/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withCsrfHeaders({ 'Content-Type': 'application/json' }),
       credentials: 'include',
       body: JSON.stringify({ isApproved }),
     })
@@ -383,7 +363,11 @@ function AdminReviews() {
   }
 
   async function del(id: string) {
-    await fetch(`/api/admin/reviews/${id}`, { method: 'DELETE', credentials: 'include' })
+    await fetch(`/api/admin/reviews/${id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: withCsrfHeaders(),
+    })
     load()
   }
 
@@ -410,7 +394,7 @@ function AdminReviews() {
 
     const res = await fetch(`/api/admin/reviews/${editingId}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withCsrfHeaders({ 'Content-Type': 'application/json' }),
       credentials: 'include',
       body: JSON.stringify({
         authorName: draft.authorName,
@@ -559,6 +543,32 @@ function AdminReviews() {
 
 /* -------------------- PORTFOLIO -------------------- */
 
+async function uploadCover(selectedFile: File) {
+  const form = new FormData()
+  form.append('file', selectedFile)
+
+  const upRes = await fetch('/api/upload', {
+    method: 'POST',
+    headers: withCsrfHeaders(),
+    credentials: 'include',
+    body: form,
+  })
+
+  const upText = await upRes.text()
+  let upData: any = null
+  try {
+    upData = upText ? JSON.parse(upText) : null
+  } catch {
+    upData = null
+  }
+
+  if (!upRes.ok) {
+    return { ok: false, error: upData?.error || 'Ошибка загрузки файла' }
+  }
+
+  return { ok: true, url: upData?.url || null }
+}
+
 function AdminPortfolio() {
   const [items, setItems] = useState<PortfolioItem[]>([])
   const [loading, setLoading] = useState(false)
@@ -639,7 +649,7 @@ function AdminPortfolio() {
     // 2) create item
     const res = await fetch('/api/admin/portfolio', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withCsrfHeaders({ 'Content-Type': 'application/json' }),
       credentials: 'include',
       body: JSON.stringify({
         title,
@@ -675,7 +685,7 @@ function AdminPortfolio() {
   async function togglePublish(id: string, next: boolean) {
     await fetch(`/api/admin/portfolio/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withCsrfHeaders({ 'Content-Type': 'application/json' }),
       credentials: 'include',
       body: JSON.stringify({ isPublished: next }),
     })
@@ -683,7 +693,11 @@ function AdminPortfolio() {
   }
 
   async function del(id: string) {
-    await fetch(`/api/admin/portfolio/${id}`, { method: 'DELETE', credentials: 'include' })
+    await fetch(`/api/admin/portfolio/${id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: withCsrfHeaders(),
+    })
     load()
   }
 
@@ -731,7 +745,7 @@ function AdminPortfolio() {
 
     const res = await fetch(`/api/admin/portfolio/${editingId}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withCsrfHeaders({ 'Content-Type': 'application/json' }),
       credentials: 'include',
       body: JSON.stringify({
         title: editDraft.title,

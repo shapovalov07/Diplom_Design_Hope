@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { withCsrfHeaders } from '@/src/lib/csrf-client'
 
 type MeUser = {
   id: string
@@ -113,7 +114,7 @@ export default function ContactsPage() {
     try {
       const res = await fetch('/api/inquiries', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: withCsrfHeaders({ 'Content-Type': 'application/json' }),
         credentials: 'include',
         body: JSON.stringify({
           serviceType: serviceType.trim(),
@@ -309,7 +310,12 @@ export default function ContactsPage() {
             <div className="mt-3 text-lg font-semibold text-[#B5292A]">
               +7 (928) 628-21-04
             </div>
-            <div className="text-lg text-[#B5292A]">team@disign-hope.ru</div>
+            <a
+              href="mailto:studio@design-hope.ru"
+              className="text-lg text-[#B5292A] hover:underline"
+            >
+              studio@design-hope.ru
+            </a>
           </aside>
         </div>
       </div>

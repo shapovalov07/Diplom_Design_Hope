@@ -1,38 +1,43 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { prisma } from '@/src/lib/prisma'
-
-type Session = { userId: string; role?: string } | null
-
-function parseSession(raw: string): Session {
-  if (!raw) return null
-
-  if (raw.trim().startsWith('{')) {
-    try {
-      const parsed = JSON.parse(raw)
-      if (parsed?.userId && typeof parsed.userId === 'string') {
-        return { userId: parsed.userId, role: parsed.role }
-      }
-      return null
-    } catch {
-      return null
-    }
-  }
-
-  return { userId: raw }
-}
+import { CSRF_COOKIE_NAME, SESSION_COOKIE_NAME } from '@/src/lib/security-constants'
+import { setCsrfCookie } from '@/src/lib/security'
+import { verifySessionToken } from '@/src/lib/session'
 
 export async function GET() {
   const jar = await cookies()
-  const raw = jar.get('session')?.value
+  const raw = jar.get(SESSION_COOKIE_NAME)?.value
 
-  const session = raw ? parseSession(raw) : null
-  if (!session) return NextResponse.json({ user: null })
+  const session = raw ? await verifySessionToken(raw) : null
+  if (!session) {
+    return NextResponse.json(
+      { user: null },
+      {
+        headers: {
+          'Cache-Control': 'no-store',
+        },
+      },
+    )
+  }
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
     select: { id: true, fullName: true, email: true, role: true },
   })
 
-  return NextResponse.json({ user: user ?? null })
+  const response = NextResponse.json(
+    { user: user ?? null },
+    {
+      headers: {
+        'Cache-Control': 'no-store',
+      },
+    },
+  )
+
+  if (!jar.get(CSRF_COOKIE_NAME)?.value) {
+    setCsrfCookie(response)
+  }
+
+  return response
 }

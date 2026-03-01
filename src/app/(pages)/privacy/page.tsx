@@ -4,11 +4,11 @@ export default function PrivacyPolicyPage() {
   return (
     <section className="mt-24 pb-20">
       <div className="mx-auto w-[80%] px-6">
-        <div className="relative">
-          <div className="pointer-events-none absolute right-0 -top-8 text-[72px] font-semibold uppercase text-black/5 sm:text-[120px]">
+        <div>
+          <div className="text-right text-[56px] leading-none font-semibold uppercase text-black/5 sm:text-[120px]">
             политика
           </div>
-          <h1 className="text-4xl font-semibold text-[#252525] sm:text-5xl">
+          <h1 className="-mt-1 text-4xl font-semibold text-[#252525] sm:text-5xl">
             Политика конфиденциальности
           </h1>
           <p className="mt-3 text-sm text-neutral-500">
@@ -84,7 +84,13 @@ export default function PrivacyPolicyPage() {
             <h2 className="text-lg font-semibold text-[#252525]">8. Контакты</h2>
             <p className="mt-3">
               По вопросам обработки данных пишите на почту:
-              <span className="text-[#B5292A]"> team@disign-hope.ru</span>.
+              {' '}
+              <a
+                href="mailto:studio@design-hope.ru"
+                className="text-[#B5292A] hover:underline"
+              >
+                studio@design-hope.ru
+              </a>.
             </p>
             <p className="mt-2 text-neutral-500">
               ОГРНИП 324619600163400, ИНН 616209647428.

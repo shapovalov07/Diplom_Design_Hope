@@ -1,30 +1,20 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/src/lib/prisma'
+import { SESSION_COOKIE_NAME } from '@/src/lib/security-constants'
+import { verifySessionToken } from '@/src/lib/session'
 
 type Session = { userId: string; role?: 'USER' | 'ADMIN' } | null
 
 async function readSession(): Promise<Session> {
-  // Next 16: cookies() async
   const jar = await cookies()
-  const raw = jar.get('session')?.value
+  const raw = jar.get(SESSION_COOKIE_NAME)?.value
   if (!raw) return null
 
-  // session хранится JSON-строкой
-  if (raw.trim().startsWith('{')) {
-    try {
-      const parsed = JSON.parse(raw)
-      if (parsed?.userId && typeof parsed.userId === 'string') {
-        return { userId: parsed.userId, role: parsed.role }
-      }
-      return null
-    } catch {
-      return null
-    }
-  }
+  const parsed = await verifySessionToken(raw)
+  if (!parsed) return null
 
-  // fallback: если вдруг там просто userId
-  return { userId: raw }
+  return { userId: parsed.userId, role: parsed.role }
 }
 
 export async function getCurrentUser() {
@@ -48,5 +38,24 @@ export async function requireUser() {
 export async function requireAdmin() {
   const user = await getCurrentUser()
   if (!user || user.role !== 'ADMIN') redirect('/login')
+  return user
+}
+
+export class ApiAuthError extends Error {
+  constructor(message = 'UNAUTHORIZED') {
+    super(message)
+    this.name = 'ApiAuthError'
+  }
+}
+
+export async function requireApiUser() {
+  const user = await getCurrentUser()
+  if (!user) throw new ApiAuthError()
+  return user
+}
+
+export async function requireApiAdmin() {
+  const user = await getCurrentUser()
+  if (!user || user.role !== 'ADMIN') throw new ApiAuthError()
   return user
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { withCsrfHeaders } from '@/src/lib/csrf-client'
 
 type Review = {
   id: string
@@ -14,6 +15,7 @@ type Review = {
 export default function ReviewsSection() {
   const [reviews, setReviews] = useState<Review[]>([])
   const [rating, setRating] = useState(5)
+  const [hoveredRating, setHoveredRating] = useState<number | null>(null)
   const [text, setText] = useState('')
   const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null)
   const [loading, setLoading] = useState(false)
@@ -106,7 +108,7 @@ export default function ReviewsSection() {
 
     const res = await fetch('/api/reviews', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withCsrfHeaders({ 'Content-Type': 'application/json' }),
       credentials: 'include',
       body: JSON.stringify({ rating, text }),
     })
@@ -340,9 +342,6 @@ export default function ReviewsSection() {
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <span className="shrink-0 rounded-full border border-black/10 bg-white px-3 py-1 text-xs text-neutral-600">
-                  Модерация
-                </span>
                 <button
                   type="button"
                   onClick={closeModal}
@@ -358,26 +357,43 @@ export default function ReviewsSection() {
               <div className="grid gap-4">
                 <label className="grid gap-2">
                   <span className="text-sm text-neutral-700">Оценка</span>
-                  <div className="grid gap-3 sm:grid-cols-[180px_1fr] sm:items-center">
-                    <select
-                      value={rating}
-                      onChange={(e) => setRating(Number(e.target.value))}
-                      className="h-11 w-full rounded-2xl border border-black/15 bg-white px-3 outline-none focus:ring-2 focus:ring-black/10"
-                    >
-                      {[5, 4, 3, 2, 1].map((v) => (
-                        <option key={v} value={v}>
-                          {v} {v === 1 ? 'звезда' : v < 5 ? 'звезды' : 'звёзд'}
-                        </option>
-                      ))}
-                    </select>
-
+                  <div className="flex flex-wrap items-center gap-3">
                     <div
-                      className="text-sm tracking-[0.2em] text-yellow-400 select-none"
-                      aria-label={`Рейтинг: ${rating} из 5`}
+                      role="radiogroup"
+                      aria-label="Выберите оценку от 1 до 5"
+                      onMouseLeave={() => setHoveredRating(null)}
+                      className="inline-flex items-center gap-1 rounded-2xl border border-black/15 bg-white px-3 py-2"
                     >
-                      {'★★★★★'.slice(0, rating)}
-                      <span className="opacity-30">{'★★★★★'.slice(rating)}</span>
+                      {[1, 2, 3, 4, 5].map((value) => (
+                        <button
+                          key={value}
+                          type="button"
+                          role="radio"
+                          aria-checked={rating === value}
+                          aria-label={`${value} ${value === 1 ? 'звезда' : value < 5 ? 'звезды' : 'звёзд'}`}
+                          onClick={() => setRating(value)}
+                          onMouseEnter={() => setHoveredRating(value)}
+                          onFocus={() => setHoveredRating(value)}
+                          onBlur={() => setHoveredRating(null)}
+                          className={[
+                            'inline-flex h-8 w-8 items-center justify-center rounded-md transition',
+                            value <= (hoveredRating ?? rating)
+                              ? 'text-yellow-400'
+                              : 'text-neutral-300 hover:text-yellow-300',
+                          ].join(' ')}
+                        >
+                          <svg
+                            viewBox="0 0 24 24"
+                            className="h-6 w-6"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path d="M12 2.75l2.86 5.79 6.39.93-4.63 4.52 1.09 6.37L12 17.35l-5.71 3.01 1.09-6.37-4.63-4.52 6.39-.93L12 2.75z" />
+                          </svg>
+                        </button>
+                      ))}
                     </div>
+                    <span className="text-sm text-neutral-600">{rating}/5</span>
                   </div>
                 </label>
 
@@ -428,8 +444,7 @@ export default function ReviewsSection() {
                 </button>
 
                 <div className="text-xs text-neutral-500">
-                  Если не залогинен — сервер вернёт{' '}
-                  <code className="px-1.5 py-0.5 rounded-lg border border-black/10 bg-black/5">401</code>.
+                  Войдите в аккаунт, чтобы оставить отзыв. После модерации он появится в ленте.
                 </div>
               </div>
             </div>

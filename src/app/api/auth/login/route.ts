@@ -20,6 +20,7 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => null)
 
   const identifierRaw = String(body?.identifier || '').trim()
+  const identifierName = identifierRaw.replace(/\s+/g, ' ')
   const identifierEmail = identifierRaw.toLowerCase()
   const password = String(body?.password || '')
 
@@ -28,7 +29,12 @@ export async function POST(req: Request) {
   }
 
   const user = await prisma.user.findFirst({
-    where: { OR: [{ email: identifierEmail }, { fullName: identifierRaw }] },
+    where: {
+      OR: [
+        { email: identifierEmail },
+        { fullName: { equals: identifierName, mode: 'insensitive' } },
+      ],
+    },
   })
 
   if (!user) {

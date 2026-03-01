@@ -13,8 +13,12 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [msg, setMsg] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const canSubmit = fullName.trim().length > 0 && email.trim().length > 0 && password.length > 0 && !loading
 
-  async function submit() {
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (loading) return
+
     setMsg(null)
 
     if (!fullName.trim() || !email.trim() || !password) {
@@ -24,23 +28,27 @@ export default function RegisterPage() {
 
     setLoading(true)
 
-    const res = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ fullName, email, password }),
-    })
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ fullName, email, password }),
+      })
 
-    const data = await res.json().catch(() => null)
-    setLoading(false)
+      const data = await res.json().catch(() => null)
 
-    if (!res.ok) {
-      setMsg(data?.error || 'Ошибка регистрации')
-      return
+      if (!res.ok) {
+        setMsg(data?.error || 'Ошибка регистрации')
+        return
+      }
+
+      router.push('/login')
+    } catch {
+      setMsg('Ошибка сети. Попробуй еще раз')
+    } finally {
+      setLoading(false)
     }
-
-    // По твоей логике: после регистрации отправляем на логин
-    router.push('/login')
   }
 
   return (
@@ -48,11 +56,13 @@ export default function RegisterPage() {
       <div className="rounded-3xl border border-black/10 bg-white p-6 shadow-[0_18px_50px_rgba(0,0,0,0.08)]">
         <h1 className="text-2xl font-semibold">Регистрация</h1>
 
-        <div className="mt-5 grid gap-3">
+        <form onSubmit={submit} className="mt-5 grid gap-3">
           <input
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             placeholder="Имя"
+            name="fullName"
+            autoComplete="name"
             className="h-11 rounded-2xl border border-black/15 px-4 outline-none focus:ring-2 focus:ring-black/10"
           />
 
@@ -61,6 +71,11 @@ export default function RegisterPage() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
             type="email"
+            name="email"
+            autoComplete="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
             className="h-11 rounded-2xl border border-black/15 px-4 outline-none focus:ring-2 focus:ring-black/10"
           />
 
@@ -70,6 +85,8 @@ export default function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Пароль"
               type={showPassword ? 'text' : 'password'}
+              name="password"
+              autoComplete="new-password"
               className="h-11 w-full rounded-2xl border border-black/15 px-4 pr-20 outline-none focus:ring-2 focus:ring-black/10"
             />
             <button
@@ -120,8 +137,8 @@ export default function RegisterPage() {
           )}
 
           <button
-            onClick={submit}
-            disabled={loading}
+            type="submit"
+            disabled={!canSubmit}
             className="h-11 rounded-2xl bg-black px-4 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
           >
             {loading ? 'Создаю…' : 'Зарегистрироваться'}
@@ -136,7 +153,7 @@ export default function RegisterPage() {
               Войти
             </Link>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   )

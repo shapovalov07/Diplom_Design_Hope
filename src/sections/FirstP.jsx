@@ -10,7 +10,8 @@ export default function HeroSection() {
         и познай наш вайб
       </p>
       <div className="reveal-up [--delay:240ms] flex mt-15 gap-15">
-        <button className="bg-[#B5292A] text-white font-light py-3 px-6 rounded-full text-lg hover:scale-105 transition duration-600">
+        <button  
+        className="bg-[#B5292A] text-white font-light py-3 px-6 rounded-full text-lg hover:scale-105 transition duration-600">
           Заказать работу
         </button>
         <button className="border-2 border-[#414141] font-light text-[#414141] py-3 px-6 rounded-full text-lg hover:scale-105 hover:rotate-6 transition duration-600">

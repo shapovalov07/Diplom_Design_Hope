@@ -19,21 +19,21 @@ function shouldUseSecureCookies(req: Request) {
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null)
 
-  const identifierRaw = String(body?.identifier || '').trim()
-  const identifierName = identifierRaw.replace(/\s+/g, ' ')
-  const identifierEmail = identifierRaw.toLowerCase()
+  const emailRaw = String(body?.email ?? body?.identifier ?? '').trim()
+  const email = emailRaw.toLowerCase()
   const password = String(body?.password || '')
 
-  if (!identifierRaw || !password) {
-    return NextResponse.json({ error: 'Заполни данные' }, { status: 400 })
+  if (!emailRaw || !password) {
+    return NextResponse.json({ error: 'Заполни email и пароль' }, { status: 400 })
   }
 
-  const user = await prisma.user.findFirst({
+  if (!email.includes('@')) {
+    return NextResponse.json({ error: 'Некорректный email' }, { status: 400 })
+  }
+
+  const user = await prisma.user.findUnique({
     where: {
-      OR: [
-        { email: identifierEmail },
-        { fullName: { equals: identifierName, mode: 'insensitive' } },
-      ],
+      email,
     },
   })
 

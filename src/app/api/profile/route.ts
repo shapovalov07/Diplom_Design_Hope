@@ -11,9 +11,13 @@ export async function PATCH(req: Request) {
 
     const fullName = String(body?.fullName || '').trim()
     const email = String(body?.email || '').trim().toLowerCase()
+    const fullNameParts = fullName.split(/\s+/).filter(Boolean)
 
     if (!fullName || !email) {
       return NextResponse.json({ error: 'Заполните имя и email' }, { status: 400 })
+    }
+    if (fullNameParts.length < 2) {
+      return NextResponse.json({ error: 'Укажите фамилию и имя' }, { status: 400 })
     }
 
     if (!email.includes('@')) {

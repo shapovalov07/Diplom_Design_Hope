@@ -9,21 +9,21 @@ const cards = [
     desc: "комплексная услуга по разработке дизайна, которая начинается с чистого листа",
     price: "от 12 000 ₽",
     span: 4,
-    href: "/request",
+    href: "/contacts",
   },
   {
     title: "Верстка",
     desc: "воплощение дизайна в работающий сайт, создание анимаций",
     price: "от 20 000 ₽",
     span: 4,
-    href: "/request",
+    href: "/contacts",
   },
   {
     title: <><span className="text-[#B5292A]">Упаковка</span> бренда</>,
     desc: "разработка фирменного стиля, логотипа и дизайна продукции. Разработка сайта и продвижение",
     price: "от 7 000 ₽",
     span: 4,
-    href: "/request",
+    href: "/contacts",
   },
 
   {
@@ -31,21 +31,21 @@ const cards = [
     desc: "оперативное обновление сайта и контента по мере поступления задач, аналитика и продвижение",
     price: "от 7 000 ₽",
     span: 8,
-    href: "/request",
+    href: "/contacts",
   },
   {
     title: <span className="text-[#B5292A]">Редизайн</span>,
     desc: "обновление дизайна уже существующего сайта",
     price: "от 9 000 ₽",
     span: 4,
-    href: "/request",
+    href: "/contacts",
   },
 
   {
     title: <span className="text-[#B5292A]">Обучение</span>,
     desc: "научитесь работать в конструкторе сайтов и самостоятельно менять контент",
     span: 3,
-    href: "/request",
+    href: "/contacts",
   },
   { title: "image", span: 3, variant: "image" },
   {
@@ -53,14 +53,14 @@ const cards = [
     desc: "напишем уникальный текст для вашего сайта",
     price: "от 3 000 ₽",
     span: 3,
-    href: "/request",
+    href: "/contacts",
   },
   {
     title: "КОМБО",
     desc: "выберите несколько позиций и получите скидку",
     span: 3,
     variant: "combo",
-    href: "/request",
+    href: "/contacts",
   },
 
   {
@@ -68,7 +68,7 @@ const cards = [
     desc: "создадим сайт под требования и разместим обязательные документы/разделы на официальном сайте.",
     price: "от 27 000 ₽/мес.",
     span: 12,
-    href: "/request",
+    href: "/contacts",
   },
 ];
 

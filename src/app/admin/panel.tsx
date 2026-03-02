@@ -183,21 +183,57 @@ function Card({ title, subtitle, children }: { title: string; subtitle?: string;
   )
 }
 
+function splitFullName(fullName: string) {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) {
+    return { lastName: '', firstName: '', middleName: '' }
+  }
+  if (parts.length === 1) {
+    return { lastName: '', firstName: parts[0], middleName: '' }
+  }
+  const [lastName, firstName, ...rest] = parts
+  return { lastName, firstName, middleName: rest.join(' ') }
+}
+
+function joinFullName({
+  lastName,
+  firstName,
+  middleName,
+}: {
+  lastName: string
+  firstName: string
+  middleName: string
+}) {
+  return [lastName, firstName, middleName]
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .join(' ')
+}
+
 function AdminProfile({ user }: { user: AdminUser }) {
   const normalizedName = user.fullName.trim()
   const normalizedEmail = user.email.trim().toLowerCase()
-  const [fullName, setFullName] = useState(normalizedName)
+  const initialNameParts = splitFullName(normalizedName)
+  const [lastName, setLastName] = useState(initialNameParts.lastName)
+  const [firstName, setFirstName] = useState(initialNameParts.firstName)
+  const [middleName, setMiddleName] = useState(initialNameParts.middleName)
   const [email, setEmail] = useState(normalizedEmail)
   const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null)
   const [savedState, setSavedState] = useState({
-    fullName: normalizedName,
+    lastName: initialNameParts.lastName,
+    firstName: initialNameParts.firstName,
+    middleName: initialNameParts.middleName,
     email: normalizedEmail,
   })
 
   const isDirty =
-    fullName.trim() !== savedState.fullName || email.trim().toLowerCase() !== savedState.email
+    lastName.trim() !== savedState.lastName ||
+    firstName.trim() !== savedState.firstName ||
+    middleName.trim() !== savedState.middleName ||
+    email.trim().toLowerCase() !== savedState.email
+  const hasRequiredName = lastName.trim().length > 0 && firstName.trim().length > 0
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -206,8 +242,15 @@ function AdminProfile({ user }: { user: AdminUser }) {
     setSaving(true)
     setMsg(null)
 
+    if (!hasRequiredName) {
+      setMsg({ type: 'err', text: 'Заполните фамилию и имя' })
+      setSaving(false)
+      return
+    }
+    const fullName = joinFullName({ lastName, firstName, middleName })
+
     const payload = {
-      fullName: fullName.trim(),
+      fullName,
       email: email.trim().toLowerCase(),
     }
 
@@ -229,9 +272,17 @@ function AdminProfile({ user }: { user: AdminUser }) {
 
       const nextName = data?.user?.fullName || payload.fullName
       const nextEmail = data?.user?.email || payload.email
+      const nextNameParts = splitFullName(nextName)
 
-      setSavedState({ fullName: nextName, email: nextEmail })
-      setFullName(nextName)
+      setSavedState({
+        lastName: nextNameParts.lastName,
+        firstName: nextNameParts.firstName,
+        middleName: nextNameParts.middleName,
+        email: nextEmail,
+      })
+      setLastName(nextNameParts.lastName)
+      setFirstName(nextNameParts.firstName)
+      setMiddleName(nextNameParts.middleName)
       setEmail(nextEmail)
       setMsg({ type: 'ok', text: 'Данные сохранены' })
       setIsEditing(false)
@@ -249,29 +300,60 @@ function AdminProfile({ user }: { user: AdminUser }) {
           <div className="text-[11px] uppercase tracking-[0.4em] text-white/60">админ</div>
           <h2 className="text-2xl font-semibold">Профиль</h2>
         </div>
-        <span className="rounded-full border border-white/25 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-white/80">
-          роль: {user.role === 'ADMIN' ? 'admin' : 'user'}
-        </span>
       </div>
 
       <form onSubmit={handleSubmit} className="card-stripe">
         <div className="grid gap-5 p-6 pl-12">
           <div className="grid gap-4">
-            <label className="grid w-full gap-2 sm:w-1/2">
-              <span className="text-xs uppercase tracking-[0.2em] text-neutral-500">ФИО</span>
-              <input
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="Ваше имя"
-                disabled={!isEditing}
-                className={[
-                  'h-11 rounded-2xl border px-4 text-sm outline-none transition',
-                  isEditing
-                    ? 'border-black/15 bg-white text-neutral-900 focus:border-black/40'
-                    : 'border-black/10 bg-white/40 text-neutral-500',
-                ].join(' ')}
-              />
-            </label>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <label className="grid w-full gap-2">
+                <span className="text-xs uppercase tracking-[0.2em] text-neutral-500">Фамилия</span>
+                <input
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Иванов"
+                  required
+                  disabled={!isEditing}
+                  className={[
+                    'h-11 rounded-2xl border px-4 text-sm outline-none transition',
+                    isEditing
+                      ? 'border-black/15 bg-white text-neutral-900 focus:border-black/40'
+                      : 'border-black/10 bg-white/40 text-neutral-500',
+                  ].join(' ')}
+                />
+              </label>
+              <label className="grid w-full gap-2">
+                <span className="text-xs uppercase tracking-[0.2em] text-neutral-500">Имя</span>
+                <input
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="Иван"
+                  required
+                  disabled={!isEditing}
+                  className={[
+                    'h-11 rounded-2xl border px-4 text-sm outline-none transition',
+                    isEditing
+                      ? 'border-black/15 bg-white text-neutral-900 focus:border-black/40'
+                      : 'border-black/10 bg-white/40 text-neutral-500',
+                  ].join(' ')}
+                />
+              </label>
+              <label className="grid w-full gap-2">
+                <span className="text-xs uppercase tracking-[0.2em] text-neutral-500">Отчество</span>
+                <input
+                  value={middleName}
+                  onChange={(e) => setMiddleName(e.target.value)}
+                  placeholder="Иванович"
+                  disabled={!isEditing}
+                  className={[
+                    'h-11 rounded-2xl border px-4 text-sm outline-none transition',
+                    isEditing
+                      ? 'border-black/15 bg-white text-neutral-900 focus:border-black/40'
+                      : 'border-black/10 bg-white/40 text-neutral-500',
+                  ].join(' ')}
+                />
+              </label>
+            </div>
             <label className="grid w-full gap-2 sm:w-1/2">
               <span className="text-xs uppercase tracking-[0.2em] text-neutral-500">Email</span>
               <input
@@ -324,7 +406,7 @@ function AdminProfile({ user }: { user: AdminUser }) {
               <>
                 <button
                   type="submit"
-                  disabled={saving || !isDirty}
+                  disabled={saving || !isDirty || !hasRequiredName}
                   className="h-11 rounded-full bg-[#B5292A] px-6 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {saving ? 'Сохранение…' : 'Сохранить'}
@@ -332,7 +414,9 @@ function AdminProfile({ user }: { user: AdminUser }) {
                 <button
                   type="button"
                   onClick={() => {
-                    setFullName(savedState.fullName)
+                    setLastName(savedState.lastName)
+                    setFirstName(savedState.firstName)
+                    setMiddleName(savedState.middleName)
                     setEmail(savedState.email)
                     setMsg(null)
                     setIsEditing(false)

@@ -341,9 +341,6 @@ export default function ReviewsSection() {
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <span className="shrink-0 rounded-full border border-black/10 bg-white px-3 py-1 text-xs text-neutral-600">
-                  Модерация
-                </span>
                 <button
                   type="button"
                   onClick={closeModal}
@@ -442,8 +439,7 @@ export default function ReviewsSection() {
                 </button>
 
                 <div className="text-xs text-neutral-500">
-                  Если не залогинен — сервер вернёт{' '}
-                  <code className="px-1.5 py-0.5 rounded-lg border border-black/10 bg-black/5">401</code>.
+                  Войдите в аккаунт и оставьте пару честных строк о работе с нами.
                 </div>
               </div>
             </div>

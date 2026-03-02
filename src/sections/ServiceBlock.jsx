@@ -96,9 +96,12 @@ function CardBl({ card, i, progress, range, targetScale }) {
               ))}
             </div>
 
-            <button className="bg-black text-white py-4 px-10 rounded-full font-medium hover:bg-[#B5292A] transition-all duration-500 self-start shadow-lg hover:shadow-[#B5292A]/20">
+            <a
+              href="/contacts"
+              className="bg-black text-white py-4 px-10 rounded-full font-medium hover:bg-[#B5292A] transition-all duration-500 self-start shadow-lg hover:shadow-[#B5292A]/20"
+            >
               Заказать услугу
-            </button>
+            </a>
           </div>
         </div>
       </motion.article>

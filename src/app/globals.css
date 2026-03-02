@@ -43,6 +43,16 @@ a {
   color: inherit;
 }
 
+.link-accent {
+  color: #B5292A !important;
+}
+
+.link-accent:visited,
+.link-accent:hover,
+.link-accent:focus {
+  color: #B5292A !important;
+}
+
 ::selection {
   background: rgba(var(--accent-rgb), 0.25);
 }

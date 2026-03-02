@@ -62,8 +62,8 @@ export default function About(){
                             <div className="w-[340px]">
                                 <div>
                                     <img src="/team-member.png" alt="" />
-                                    <div className="flex h-[40px] bg-red-700 items-center mb-[35px]">
-                                        <p className="text-white text-[21px] uppercase">менеджер проектов</p>
+                                    <div className="flex h-[40px] bg-red-700 items-center pl-3 mb-[20px]">
+                                        <p className="text-white text-[17px] uppercase leading-none whitespace-nowrap">менеджер проектов</p>
                                     </div>
                                 </div> 
                                 <div>
@@ -75,8 +75,8 @@ export default function About(){
                             <div className="w-[340px] h-[440px]">
                                 <div>
                                     <img src="/team-member.png" alt="" />
-                                    <div className="flex h-[40px] bg-red-700 items-center mb-[35px]">
-                                        <p className="text-white text-[21px] uppercase">менеджер проектов</p>
+                                    <div className="flex h-[40px] bg-red-700 items-center pl-3 mb-[20px]">
+                                        <p className="text-white text-[17px] uppercase leading-none whitespace-nowrap">менеджер проектов</p>
                                     </div>
                                 </div> 
                                 <div>
@@ -95,8 +95,8 @@ export default function About(){
                             <div className="w-[30%]">
                                 <div>
                                     <img src="/nikita.png" alt="" />
-                                    <div className="flex h-[40px] bg-red-700 items-center mb-[35px]">
-                                        <p className="text-white text-[21px] uppercase">менеджер проектов</p>
+                                    <div className="flex h-[40px] bg-red-700 items-center pl-3 mb-[20px]">
+                                        <p className="text-white text-[17px] uppercase leading-none whitespace-nowrap">менеджер проектов</p>
                                     </div>
                                 </div> 
                                 <div>
@@ -108,8 +108,8 @@ export default function About(){
                             <div className="w-[30%]">
                                 <div>
                                     <img src="/nikita.png" alt="" />
-                                    <div className="flex h-[40px] bg-red-700 items-center mb-[35px]">
-                                        <p className="text-white text-[21px] uppercase">менеджер проектов</p>
+                                    <div className="flex h-[40px] bg-red-700 items-center pl-3 mb-[20px]">
+                                        <p className="text-white text-[17px] uppercase leading-none whitespace-nowrap">менеджер проектов</p>
                                     </div>
                                 </div> 
                                 <div>
@@ -121,8 +121,8 @@ export default function About(){
                             <div className="w-[30%]">
                                 <div>
                                     <img src="/nikita.png" alt="" />
-                                    <div className="flex h-[40px] bg-red-700 items-center mb-[35px]">
-                                        <p className="text-white text-[21px] uppercase">менеджер проектов</p>
+                                    <div className="flex h-[40px] bg-red-700 items-center pl-3 mb-[20px]">
+                                        <p className="text-white text-[17px] uppercase leading-none whitespace-nowrap">менеджер проектов</p>
                                     </div>
                                 </div> 
                                 <div>

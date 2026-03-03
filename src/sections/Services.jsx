@@ -47,7 +47,7 @@ const cards = [
     span: 3,
     href: "/contacts",
   },
-  { title: "image", span: 3, variant: "image" },
+  { title: "изображение", span: 3, variant: "image" },
   {
     title: <><span className="text-[#B5292A]">Шепотка</span> копирайта</>,
     desc: "напишем уникальный текст для вашего сайта",
@@ -92,7 +92,7 @@ function CardBlock({ card, onClick }) {
     return (
       <div className={`${spanClass[card.span]} min-h-[170px] overflow-hidden`}>
         <div className="relative h-full min-h-[170px]">
-          <Image src="/sol.gif" alt="demo" fill className="object-cover" />
+          <Image src="/sol.gif" alt="пример" fill className="object-cover" />
         </div>
       </div>
     );

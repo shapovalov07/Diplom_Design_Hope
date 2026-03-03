@@ -355,11 +355,11 @@ function AdminProfile({ user }: { user: AdminUser }) {
               </label>
             </div>
             <label className="grid w-full gap-2 sm:w-1/2">
-              <span className="text-xs uppercase tracking-[0.2em] text-neutral-500">Email</span>
+              <span className="text-xs uppercase tracking-[0.2em] text-neutral-500">Почта</span>
               <input
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder="почта@пример.рф"
                 type="email"
                 disabled={!isEditing}
                 className={[
@@ -701,10 +701,10 @@ function AdminInquiries({ currentUserId }: { currentUserId: string }) {
                   <div className="mt-1 text-sm text-neutral-500">
                     {item.user?.email ? (
                       <>
-                        Email: {highlightMatch(item.user.email)}
+                        Почта: {highlightMatch(item.user.email)}
                       </>
                     ) : (
-                      'Email: —'
+                      'Почта: —'
                     )}
                   </div>
                 </div>
@@ -866,7 +866,7 @@ function AdminReviews() {
   }
 
   return (
-    <Card title="Модерация отзывов" subtitle="Approve/Unapprove, удаление, просмотр статуса.">
+    <Card title="Модерация отзывов" subtitle="Одобрение/снятие, удаление, просмотр статуса.">
       <div className="flex items-center justify-between gap-4">
         <div className="text-sm text-neutral-500">
           {loading ? 'Загрузка…' : `Всего: ${items.length}`}
@@ -891,9 +891,7 @@ function AdminReviews() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <div className="font-semibold truncate">{r.authorName}</div>
-                      <Badge ok={r.isApproved}>
-                        {r.isApproved ? 'Approved' : 'Not approved'}
-                      </Badge>
+                      <Badge ok={r.isApproved}>{r.isApproved ? 'Одобрено' : 'Не одобрено'}</Badge>
                     </div>
                     <div className="mt-1 text-xs text-neutral-500">
                       {new Date(r.createdAt).toLocaleString()}
@@ -941,7 +939,7 @@ function AdminReviews() {
                       />
                     </label>
                     <label className="grid gap-2 text-sm text-neutral-700">
-                      Аватар URL (необязательно)
+                      Ссылка на аватар (необязательно)
                       <input
                         value={draft.avatarUrl}
                         onChange={(e) => setDraft((prev) => ({ ...prev, avatarUrl: e.target.value }))}
@@ -969,8 +967,8 @@ function AdminReviews() {
                 )}
 
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <Btn onClick={() => approve(r.id, true)}>Approve</Btn>
-                  <Btn onClick={() => approve(r.id, false)}>Unapprove</Btn>
+                  <Btn onClick={() => approve(r.id, true)}>Одобрить</Btn>
+                  <Btn onClick={() => approve(r.id, false)}>Снять</Btn>
                   {isEditing ? (
                     <>
                       <Btn onClick={saveEdit}>{saving ? 'Сохраняю…' : 'Сохранить'}</Btn>
@@ -979,7 +977,7 @@ function AdminReviews() {
                   ) : (
                     <Btn onClick={() => startEdit(r)}>Редактировать</Btn>
                   )}
-                  <Btn variant="danger" onClick={() => del(r.id)}>Delete</Btn>
+                  <Btn variant="danger" onClick={() => del(r.id)}>Удалить</Btn>
                 </div>
               </div>
             )
@@ -1213,7 +1211,7 @@ function AdminPortfolio() {
           <input
             value={projectUrl}
             onChange={(e) => setProjectUrl(e.target.value)}
-            placeholder="https://example.com"
+            placeholder="https://пример.рф"
             className="h-11 rounded-2xl border border-black/15 bg-white px-4 outline-none focus:ring-2 focus:ring-black/10"
           />
           <div className="text-xs text-neutral-500">Ссылка должна начинаться с https://</div>
@@ -1357,7 +1355,7 @@ function AdminPortfolio() {
 
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex flex-wrap items-center gap-2">
-                        <Badge ok={p.isPublished}>{p.isPublished ? 'Published' : 'Draft'}</Badge>
+                        <Badge ok={p.isPublished}>{p.isPublished ? 'Опубликовано' : 'Черновик'}</Badge>
                         <div className="text-xs text-neutral-500">
                           {formatTimestamp(p.createdAt)} · Опубликовал: {p.publishedBy?.fullName || '—'}
                         </div>
@@ -1407,11 +1405,11 @@ function AdminPortfolio() {
                     </label>
 
                     <label className="grid gap-2 text-sm text-neutral-700">
-                      Обложка URL
+                      Ссылка на обложку
                       <input
                         value={editDraft.coverImageUrl}
                         onChange={(e) => setEditDraft((prev) => ({ ...prev, coverImageUrl: e.target.value }))}
-                        placeholder="https://example.com/image.jpg"
+                        placeholder="https://пример.рф/картинка.jpg"
                         className="h-10 rounded-xl border border-black/15 bg-white px-3 outline-none"
                       />
                     </label>

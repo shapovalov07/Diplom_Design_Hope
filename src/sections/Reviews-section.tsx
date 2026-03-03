@@ -174,7 +174,7 @@ export default function ReviewsSection() {
             {avgRating ? `${avgRating}/5` : '—/5'}
           </span>
           <span className="text-yellow-400 text-lg">★</span>
-          <span className="font-semibold text-neutral-900">HOPE Reviews</span>
+          <span className="font-semibold text-neutral-900">Отзывы клиентов</span>
           <span className="text-neutral-300">•</span>
           <span>На основе {reviews.length} отзывов</span>
         </div>

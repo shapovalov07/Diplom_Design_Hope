@@ -43,6 +43,16 @@ a {
   color: inherit;
 }
 
+.service-cta,
+.service-cta:visited,
+.service-cta:hover,
+.service-cta:active,
+.service-cta:focus {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+  opacity: 1 !important;
+}
+
 .link-accent {
   color: #B5292A !important;
 }

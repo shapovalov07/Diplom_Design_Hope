@@ -20,7 +20,7 @@ export default function About(){
                 <div className="">
                     <div className="h-[420px] w-[600px] bg-[#252525] mb-5 p-10 ">
                         <div className="flex items-center justify-between ">
-                            <p className="text-[64px] text-white leading-none">Figma</p>
+                            <p className="text-[64px] text-white leading-none">Фигма</p>
                             <p className="text-[#323232] text-[40px] leading-none">#дизайн</p>
                         </div>
 
@@ -37,8 +37,8 @@ export default function About(){
 
 
                 <div className="p-10"> 
-                    <p className="text-[#D5D5D5] text-[40px] mb-[30px]">#Верстка no-code</p>
-                    <p className="text-[48px] font-medium text-[#252525] mb-[20px]">Word Press и Tilda</p>
+                    <p className="text-[#D5D5D5] text-[40px] mb-[30px]">#верстка без кода</p>
+                    <p className="text-[48px] font-medium text-[#252525] mb-[20px]">Вордпресс и Тильда</p>
                     <p className="text-[18px] text-[#252525] font-normal mb-[50px]">Гибкие инструменты, которые позволяют создавать сайты любой сложности, от простых лендингов до крупных интернет-магазинов за кратчайшие сроки. А так же предлагают доступные тарифы, что делает их выгодным решением для любого бизнеса.</p>
                     <button className="text-[#9F9F9F] text-[14px] font-light hover:text-red-700">
                         Читать статью →

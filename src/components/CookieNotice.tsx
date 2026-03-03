@@ -46,7 +46,7 @@ export default function CookieNotice() {
       >
         <div className="grid gap-4 sm:grid-cols-[1fr_120px]">
           <div className="grid gap-3">
-            <h3 className="text-lg font-semibold text-[#252525]">Мы используем cookies</h3>
+            <h3 className="text-lg font-semibold text-[#252525]">Мы используем куки-файлы</h3>
             <p className="text-sm text-neutral-600">
               Это позволяет нам анализировать взаимодействие посетителей с сайтом и делать его лучше.
             </p>

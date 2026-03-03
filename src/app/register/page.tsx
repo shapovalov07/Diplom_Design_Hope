@@ -32,12 +32,12 @@ export default function RegisterPage() {
     const normalizedEmail = email.trim().toLowerCase()
 
     if (!normalizedLastName || !normalizedFirstName || !normalizedEmail || !password) {
-      setMsg('Заполни фамилию, имя, email и пароль')
+      setMsg('Заполни фамилию, имя, почту и пароль')
       return
     }
 
     if (!normalizedEmail.includes('@')) {
-      setMsg('Некорректный email')
+      setMsg('Некорректная почта')
       return
     }
 
@@ -113,14 +113,14 @@ export default function RegisterPage() {
             </label>
 
             <label className="grid gap-1.5">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-neutral-500">Email</span>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-neutral-500">Почта</span>
               <input
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value)
                   if (msg) setMsg(null)
                 }}
-                placeholder="you@example.com"
+                placeholder="почта@пример.рф"
                 type="email"
                 name="email"
                 autoComplete="email"

@@ -300,9 +300,12 @@ export default function ContactsPage() {
             </div>
 
             <div className="mt-8 text-sm text-neutral-500">Контакты для связи:</div>
-            <div className="mt-3 text-lg font-semibold text-[#B5292A]">
+            <a
+              href="tel:+79286282104"
+              className="mt-3 inline-block text-lg font-semibold text-[#B5292A] hover:underline"
+            >
               +7 (928) 628-21-04
-            </div>
+            </a>
             <a
               href="mailto:studio@design-hope.ru"
               className="text-lg link-accent hover:underline"

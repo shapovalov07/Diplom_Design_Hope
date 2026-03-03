@@ -191,11 +191,11 @@ export default function ProfileForm({ initialFullName, initialEmail }: ProfileFo
               </label>
             </div>
             <label className="grid w-full gap-2 sm:w-1/2">
-              <span className="text-xs uppercase tracking-[0.18em] text-neutral-500">Email</span>
+              <span className="text-xs uppercase tracking-[0.18em] text-neutral-500">Почта</span>
               <input
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder="почта@пример.рф"
                 type="email"
                 disabled={!isEditing}
                 className={[

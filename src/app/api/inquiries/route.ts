@@ -59,7 +59,7 @@ export async function POST(req: Request) {
       [
         '📬 Новая заявка',
         `Имя: ${inquiry.fullName}`,
-        `Email: ${user.email}`,
+        `Почта: ${user.email}`,
         `Услуга: ${inquiry.serviceType}`,
         `Описание: ${inquiry.description}`,
         `ID: ${inquiry.id}`,

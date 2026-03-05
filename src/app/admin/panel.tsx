@@ -50,6 +50,7 @@ async function uploadCover(selectedFile: File) {
 
   const upRes = await fetch('/api/upload', {
     method: 'POST',
+    headers: withCsrfHeaders(),
     credentials: 'include',
     body: form,
   })
@@ -998,32 +999,6 @@ function AdminReviews() {
 }
 
 /* -------------------- PORTFOLIO -------------------- */
-
-async function uploadCover(selectedFile: File) {
-  const form = new FormData()
-  form.append('file', selectedFile)
-
-  const upRes = await fetch('/api/upload', {
-    method: 'POST',
-    headers: withCsrfHeaders(),
-    credentials: 'include',
-    body: form,
-  })
-
-  const upText = await upRes.text()
-  let upData: any = null
-  try {
-    upData = upText ? JSON.parse(upText) : null
-  } catch {
-    upData = null
-  }
-
-  if (!upRes.ok) {
-    return { ok: false, error: upData?.error || 'Ошибка загрузки файла' }
-  }
-
-  return { ok: true, url: upData?.url || null }
-}
 
 function AdminPortfolio() {
   const [items, setItems] = useState<PortfolioItem[]>([])

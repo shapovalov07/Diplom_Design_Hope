@@ -71,7 +71,7 @@ export default function RegisterPage() {
   function handleEnter(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key !== 'Enter') return
     e.preventDefault()
-    void submit()
+    e.currentTarget.form?.requestSubmit()
   }
 
   return (

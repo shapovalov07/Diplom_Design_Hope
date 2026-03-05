@@ -13,7 +13,7 @@ export const runtime = 'nodejs'
 
 export async function GET() {
   try {
-    const user = await requireUser()
+    const user = await requireApiUser()
     const inquiries = await prisma.inquiry.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: 'desc' },

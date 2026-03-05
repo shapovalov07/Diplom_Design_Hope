@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { withCsrfHeaders } from '@/src/lib/csrf-client'
 
 
 type MeUser = {

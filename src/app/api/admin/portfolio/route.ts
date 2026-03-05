@@ -12,9 +12,17 @@ import {
 
 export const runtime = 'nodejs'
 
+type CreatePortfolioBody = {
+  title?: string
+  projectUrl?: string
+  description?: string | null
+  coverImageUrl?: string | null
+  isPublished?: boolean
+}
+
 export async function GET() {
   try {
-    await requireAdmin()
+    await requireApiAdmin()
     const items = await prisma.portfolioItem.findMany({
       orderBy: { createdAt: 'desc' },
       include: {
@@ -23,66 +31,81 @@ export async function GET() {
         },
       },
     })
+
     return NextResponse.json({ items })
   } catch (error) {
     if (error instanceof ApiAuthError) {
       return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 })
     }
-    return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 })
+    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
   }
 }
 
 export async function POST(req: Request) {
+  const rl = checkRateLimit(req, {
+    bucket: 'admin:portfolio:create',
+    limit: 120,
+    windowMs: 60 * 60 * 1000,
+  })
+  if (rl.limited) return rateLimitErrorResponse(rl.retryAfterSec)
+
+  let admin: Awaited<ReturnType<typeof requireApiAdmin>>
   try {
-    const admin = await requireAdmin()
-
-  try {
-    await requireApiAdmin()
-    if (!(await hasValidCsrfToken(req))) return csrfErrorResponse()
-
-    const body = await req.json().catch(() => null) as {
-      title?: string
-      projectUrl?: string
-      description?: string | null
-      coverImageUrl?: string | null
-      isPublished?: boolean
-    } | null
-    if (!body) {
-      return NextResponse.json({ error: 'Некорректный JSON' }, { status: 400 })
-    }
-
-    const { title, projectUrl, description, coverImageUrl, isPublished } = body
-
-    if (!title?.trim() || !projectUrl?.trim()) {
-      return NextResponse.json({ error: 'title и projectUrl обязательны' }, { status: 400 })
-    }
-    if (title.trim().length > 160) {
-      return NextResponse.json({ error: 'Слишком длинный title' }, { status: 400 })
-    }
-
-    if (!isHttpUrl(projectUrl.trim())) {
-      return NextResponse.json({ error: 'Некорректная ссылка (projectUrl)' }, { status: 400 })
-    }
-
-    const published = Boolean(isPublished)
-
-    const item = await prisma.portfolioItem.create({
-      data: {
-        title: title.trim(),
-        projectUrl: projectUrl.trim(),
-        description: description ?? null,
-        coverImageUrl: coverImageUrl ?? null,
-        isPublished: published,
-        publishedById: published ? admin.id : null,
-      },
-    })
-
-    return NextResponse.json({ item }, { status: 201 })
+    admin = await requireApiAdmin()
   } catch (error) {
     if (error instanceof ApiAuthError) {
       return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 })
     }
+    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+  }
 
+  if (!(await hasValidCsrfToken(req))) return csrfErrorResponse()
+
+  try {
+    const body = (await req.json().catch(() => null)) as CreatePortfolioBody | null
+    if (!body) {
+      return NextResponse.json({ error: 'Некорректный JSON' }, { status: 400 })
+    }
+
+    const title = body.title?.trim() ?? ''
+    const projectUrl = body.projectUrl?.trim() ?? ''
+    const description = body.description?.trim() ?? null
+    const coverImageUrl = body.coverImageUrl?.trim() ?? null
+    const isPublished = Boolean(body.isPublished)
+
+    if (!title || !projectUrl) {
+      return NextResponse.json({ error: 'title и projectUrl обязательны' }, { status: 400 })
+    }
+
+    if (title.length > 160) {
+      return NextResponse.json({ error: 'Слишком длинный title' }, { status: 400 })
+    }
+
+    if (!isHttpUrl(projectUrl)) {
+      return NextResponse.json({ error: 'Некорректная ссылка (projectUrl)' }, { status: 400 })
+    }
+
+    if (
+      coverImageUrl &&
+      !isRelativeUploadPath(coverImageUrl) &&
+      !isHttpUrl(coverImageUrl)
+    ) {
+      return NextResponse.json({ error: 'Некорректная ссылка обложки' }, { status: 400 })
+    }
+
+    const item = await prisma.portfolioItem.create({
+      data: {
+        title,
+        projectUrl,
+        description,
+        coverImageUrl,
+        isPublished,
+        publishedById: isPublished ? admin.id : null,
+      },
+    })
+
+    return NextResponse.json({ item }, { status: 201 })
+  } catch {
     return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
   }
 }

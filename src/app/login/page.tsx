@@ -57,7 +57,7 @@ export default function LoginPage() {
   function handleEnter(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key !== 'Enter') return
     e.preventDefault()
-    void submit()
+    e.currentTarget.form?.requestSubmit()
   }
 
   return (

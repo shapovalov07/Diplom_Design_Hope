@@ -12,6 +12,7 @@ const nextBin = path.join(projectRoot, 'node_modules', '.bin', 'next')
 const START_TIMEOUT_MS = Number(process.env.DEV_START_TIMEOUT_MS || 120000)
 const START_STABILITY_WINDOW_MS = Number(process.env.DEV_START_STABILITY_WINDOW_MS || 5000)
 const PORT = Number(process.env.PORT || 3000)
+const PREFER_TURBOPACK = process.env.DEV_PREFER_TURBOPACK === '1'
 
 function log(message) {
   process.stdout.write(`[dev-fast] ${message}\n`)
@@ -204,10 +205,15 @@ async function main() {
   cleanupStaleLock()
   cleanupStaleDevNodeModules()
 
-  const modes = [
-    { label: 'turbopack', args: ['--turbopack'] },
-    { label: 'webpack', args: ['--webpack'] },
-  ]
+  const modes = PREFER_TURBOPACK
+    ? [
+        { label: 'turbopack', args: ['--turbopack'] },
+        { label: 'webpack', args: ['--webpack'] },
+      ]
+    : [
+        { label: 'webpack', args: ['--webpack'] },
+        { label: 'turbopack', args: ['--turbopack'] },
+      ]
 
   for (const mode of modes) {
     const ok = await runMode(mode.label, mode.args)

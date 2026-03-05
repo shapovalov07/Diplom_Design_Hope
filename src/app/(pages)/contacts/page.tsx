@@ -115,7 +115,7 @@ export default function ContactsPage() {
     try {
       const res = await fetch('/api/inquiries', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: withCsrfHeaders({ 'Content-Type': 'application/json' }),
         credentials: 'include',
         body: JSON.stringify({
           serviceType: serviceType.trim(),

@@ -11,7 +11,11 @@
     "build": "next build",
     "prestart": "prisma generate",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose stop db",
+    "db:logs": "docker compose logs -f db",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.2.0",

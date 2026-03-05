@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { withCsrfHeaders } from '@/src/lib/csrf-client'
 
 type Review = {
   id: string
@@ -107,7 +108,7 @@ export default function ReviewsSection() {
 
     const res = await fetch('/api/reviews', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withCsrfHeaders({ 'Content-Type': 'application/json' }),
       credentials: 'include',
       body: JSON.stringify({ rating, text }),
     })
@@ -389,6 +390,7 @@ export default function ReviewsSection() {
                     <div className="text-sm text-neutral-500" aria-live="polite">
                       {rating} из 5
                     </div>
+                    <span className="text-sm text-neutral-600">{rating}/5</span>
                   </div>
                 </label>
 

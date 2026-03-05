@@ -12,7 +12,6 @@ const secret = new TextEncoder().encode(
   secretValue || (isBuild ? 'build_secret_placeholder' : 'dev_secret_change_me'),
 )
 
-const secret = new TextEncoder().encode(rawSecret)
 const IS_PRODUCTION = process.env.NODE_ENV === 'production'
 const SESSION_ISSUER = 'hope-auth'
 const SESSION_AUDIENCE = 'hope-web'

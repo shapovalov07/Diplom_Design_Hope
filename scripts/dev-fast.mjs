@@ -10,6 +10,7 @@ const devNodeModulesPath = path.join(projectRoot, '.next', 'dev', 'node_modules'
 const nextBin = path.join(projectRoot, 'node_modules', '.bin', 'next')
 
 const START_TIMEOUT_MS = Number(process.env.DEV_START_TIMEOUT_MS || 120000)
+const START_STABILITY_WINDOW_MS = Number(process.env.DEV_START_STABILITY_WINDOW_MS || 5000)
 const PORT = Number(process.env.PORT || 3000)
 
 function log(message) {
@@ -175,6 +176,16 @@ async function runMode(label, modeArgs) {
 
     process.on('SIGINT', () => forwardSignal('SIGINT'))
     process.on('SIGTERM', () => forwardSignal('SIGTERM'))
+
+    const stable = await Promise.race([
+      exited.then(() => false),
+      new Promise((resolve) => setTimeout(() => resolve(true), START_STABILITY_WINDOW_MS)),
+    ])
+
+    if (!stable) {
+      log(`${label} mode crashed shortly after startup, switching mode`)
+      return false
+    }
 
     const { code, signal } = await exited
     process.exit(code ?? (signal ? 1 : 0))

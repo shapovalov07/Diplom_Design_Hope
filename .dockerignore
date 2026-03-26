@@ -2,6 +2,7 @@ node_modules
 node_modules 2
 .next
 .next.bak
+.next_broken_*
 .git
 .gitignore
 .env
@@ -12,3 +13,4 @@ yarn-error.log
 *.log
 README.md
 node_modules_broken_*
+proserka_versiii

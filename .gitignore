@@ -15,6 +15,7 @@
 
 # next.js
 /.next/
+/.next_broken_*/
 /out/
 
 # production
@@ -24,6 +25,7 @@
 .DS_Store
 *.pem
 .git.backup/
+/proserka_versiii/
 
 # debug
 npm-debug.log*

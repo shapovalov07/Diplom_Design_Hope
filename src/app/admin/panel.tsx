@@ -1,13 +1,18 @@
 'use client'
 
+import StarRating from '@/src/components/StarRating'
 import LogoutButton from '@/src/components/LogoutButton'
 import InquiryChat from '@/src/components/InquiryChat'
 import { useEffect, useState } from 'react'
 import { withCsrfHeaders } from '@/src/lib/csrf-client'
+import { formatRating, MAX_RATING, RATING_STEP } from '@/src/lib/rating'
+import { formatUserFullName } from '@/src/lib/user-name'
 
 type AdminUser = {
   id: string
-  fullName: string
+  lastName: string
+  firstName: string
+  middleName: string
   email: string
   role: 'USER' | 'ADMIN'
 }
@@ -30,7 +35,7 @@ type PortfolioItem = {
   coverImageUrl: string | null
   isPublished: boolean
   createdAt: string
-  publishedBy?: { id: string; fullName: string; email: string } | null
+  publishedBy?: { id: string; lastName: string; firstName: string; middleName: string; email: string } | null
 }
 
 type Inquiry = {
@@ -41,7 +46,7 @@ type Inquiry = {
   fullName: string
   status: 'NEW' | 'IN_PROGRESS' | 'DONE'
   createdAt: string
-  user?: { fullName: string; email: string } | null
+  user?: { lastName: string; firstName: string; middleName: string; email: string } | null
 }
 
 async function uploadCover(selectedFile: File) {
@@ -185,48 +190,19 @@ function Card({ title, subtitle, children }: { title: string; subtitle?: string;
   )
 }
 
-function splitFullName(fullName: string) {
-  const parts = fullName.trim().split(/\s+/).filter(Boolean)
-  if (parts.length === 0) {
-    return { lastName: '', firstName: '', middleName: '' }
-  }
-  if (parts.length === 1) {
-    return { lastName: '', firstName: parts[0], middleName: '' }
-  }
-  const [lastName, firstName, ...rest] = parts
-  return { lastName, firstName, middleName: rest.join(' ') }
-}
-
-function joinFullName({
-  lastName,
-  firstName,
-  middleName,
-}: {
-  lastName: string
-  firstName: string
-  middleName: string
-}) {
-  return [lastName, firstName, middleName]
-    .map((part) => part.trim())
-    .filter(Boolean)
-    .join(' ')
-}
-
 function AdminProfile({ user }: { user: AdminUser }) {
-  const normalizedName = user.fullName.trim()
   const normalizedEmail = user.email.trim().toLowerCase()
-  const initialNameParts = splitFullName(normalizedName)
-  const [lastName, setLastName] = useState(initialNameParts.lastName)
-  const [firstName, setFirstName] = useState(initialNameParts.firstName)
-  const [middleName, setMiddleName] = useState(initialNameParts.middleName)
+  const [lastName, setLastName] = useState(user.lastName.trim())
+  const [firstName, setFirstName] = useState(user.firstName.trim())
+  const [middleName, setMiddleName] = useState(user.middleName.trim())
   const [email, setEmail] = useState(normalizedEmail)
   const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null)
   const [savedState, setSavedState] = useState({
-    lastName: initialNameParts.lastName,
-    firstName: initialNameParts.firstName,
-    middleName: initialNameParts.middleName,
+    lastName: user.lastName.trim(),
+    firstName: user.firstName.trim(),
+    middleName: user.middleName.trim(),
     email: normalizedEmail,
   })
 
@@ -249,10 +225,11 @@ function AdminProfile({ user }: { user: AdminUser }) {
       setSaving(false)
       return
     }
-    const fullName = joinFullName({ lastName, firstName, middleName })
 
     const payload = {
-      fullName,
+      lastName: lastName.trim(),
+      firstName: firstName.trim(),
+      middleName: middleName.trim(),
       email: email.trim().toLowerCase(),
     }
 
@@ -272,19 +249,20 @@ function AdminProfile({ user }: { user: AdminUser }) {
         return
       }
 
-      const nextName = data?.user?.fullName || payload.fullName
       const nextEmail = data?.user?.email || payload.email
-      const nextNameParts = splitFullName(nextName)
+      const nextLastName = data?.user?.lastName ?? payload.lastName
+      const nextFirstName = data?.user?.firstName ?? payload.firstName
+      const nextMiddleName = data?.user?.middleName ?? payload.middleName
 
       setSavedState({
-        lastName: nextNameParts.lastName,
-        firstName: nextNameParts.firstName,
-        middleName: nextNameParts.middleName,
+        lastName: nextLastName,
+        firstName: nextFirstName,
+        middleName: nextMiddleName,
         email: nextEmail,
       })
-      setLastName(nextNameParts.lastName)
-      setFirstName(nextNameParts.firstName)
-      setMiddleName(nextNameParts.middleName)
+      setLastName(nextLastName)
+      setFirstName(nextFirstName)
+      setMiddleName(nextMiddleName)
       setEmail(nextEmail)
       setMsg({ type: 'ok', text: 'Данные сохранены' })
       setIsEditing(false)
@@ -769,6 +747,7 @@ function AdminInquiries({ currentUserId }: { currentUserId: string }) {
 /* -------------------- REVIEWS -------------------- */
 
 function AdminReviews() {
+  const ratingOptions = Array.from({ length: MAX_RATING / RATING_STEP }, (_, index) => MAX_RATING - index * RATING_STEP)
   const [items, setItems] = useState<Review[]>([])
   const [loading, setLoading] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -909,11 +888,8 @@ function AdminReviews() {
                   </div>
 
                   <div className="shrink-0 rounded-2xl border border-black/10 bg-white px-3 py-2 text-right">
-                    <div className="text-sm tracking-[0.2em] text-neutral-800 select-none">
-                      {'★★★★★'.slice(0, r.rating)}
-                      <span className="opacity-30">{'★★★★★'.slice(r.rating)}</span>
-                    </div>
-                    <div className="text-xs text-neutral-500">{r.rating}/5</div>
+                    <StarRating value={r.rating} starClassName="h-4 w-4" className="justify-end gap-0.5" activeClassName="text-yellow-400" inactiveClassName="text-neutral-300" />
+                    <div className="mt-1 text-xs text-neutral-500">{formatRating(r.rating)}/5</div>
                   </div>
                 </div>
 
@@ -934,8 +910,8 @@ function AdminReviews() {
                         onChange={(e) => setDraft((prev) => ({ ...prev, rating: Number(e.target.value) }))}
                         className="h-10 rounded-xl border border-black/15 bg-white px-3 outline-none"
                       >
-                        {[5, 4, 3, 2, 1].map((v) => (
-                          <option key={v} value={v}>{v}</option>
+                        {ratingOptions.map((v) => (
+                          <option key={v} value={v}>{formatRating(v)}</option>
                         ))}
                       </select>
                     </label>
@@ -1371,7 +1347,8 @@ function AdminPortfolio() {
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge ok={p.isPublished}>{p.isPublished ? 'Опубликовано' : 'Черновик'}</Badge>
                         <div className="text-xs text-neutral-500">
-                          {formatTimestamp(p.createdAt)} · Опубликовал: {p.publishedBy?.fullName || '—'}
+                          {formatTimestamp(p.createdAt)} · Опубликовал:{' '}
+                          {p.publishedBy ? formatUserFullName(p.publishedBy) || '—' : '—'}
                         </div>
                       </div>
 

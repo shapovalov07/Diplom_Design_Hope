@@ -4,11 +4,14 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { withCsrfHeaders } from '@/src/lib/csrf-client'
+import { formatUserFullName } from '@/src/lib/user-name'
 
 
 type MeUser = {
   id: string
-  fullName: string
+  lastName: string
+  firstName: string
+  middleName: string
   email: string
   role: 'USER' | 'ADMIN'
 }
@@ -66,8 +69,9 @@ export default function ContactsPage() {
         const res = await fetch('/api/auth/me', { cache: 'no-store', credentials: 'include' })
         const data = (await res.json().catch(() => ({ user: null }))) as MeResponse
         setMe(data.user ?? null)
-        if (data.user?.fullName) {
-          setFullName((prev) => (prev ? prev : data.user!.fullName))
+        if (data.user) {
+          const nextFullName = formatUserFullName(data.user)
+          setFullName((prev) => (prev ? prev : nextFullName))
         }
       } catch {
         setMe(null)

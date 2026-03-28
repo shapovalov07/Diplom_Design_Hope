@@ -7,7 +7,9 @@ import { usePathname } from 'next/navigation'
 
 type MeUser = {
   id: string
-  fullName: string
+  lastName: string
+  firstName: string
+  middleName: string
   email: string
   role: 'USER' | 'ADMIN'
 }

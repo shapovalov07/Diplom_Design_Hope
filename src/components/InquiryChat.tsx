@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { formatUserFullName } from '@/src/lib/user-name'
 
 type ChatMessage = {
   id: string
@@ -8,7 +9,9 @@ type ChatMessage = {
   createdAt: string
   author: {
     id: string
-    fullName: string
+    lastName: string
+    firstName: string
+    middleName: string
     role: 'USER' | 'ADMIN'
   }
 }
@@ -139,7 +142,7 @@ export default function InquiryChat({
                 ].join(' ')}
               >
                 <div className="text-[11px] text-neutral-500">
-                  {message.author.fullName} · {formatTimestamp(message.createdAt)}
+                  {formatUserFullName(message.author)} · {formatTimestamp(message.createdAt)}
                 </div>
                 <div className="mt-1 whitespace-pre-wrap leading-relaxed">
                   {message.text}

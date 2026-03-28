@@ -1,7 +1,9 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import StarRating from '@/src/components/StarRating'
 import { withCsrfHeaders } from '@/src/lib/csrf-client'
+import { formatRating } from '@/src/lib/rating'
 
 type Review = {
   id: string
@@ -14,7 +16,7 @@ type Review = {
 
 export default function ReviewsSection() {
   const [reviews, setReviews] = useState<Review[]>([])
-  const [rating, setRating] = useState(5)
+  const [rating, setRating] = useState<number>(5)
   const [hoverRating, setHoverRating] = useState<number | null>(null)
   const [text, setText] = useState('')
   const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null)
@@ -85,6 +87,7 @@ export default function ReviewsSection() {
   }
 
   function closeModal() {
+    setHoverRating(null)
     setIsModalVisible(false)
     closeTimerRef.current = window.setTimeout(() => {
       setIsModalOpen(false)
@@ -122,6 +125,8 @@ export default function ReviewsSection() {
     }
 
     setText('')
+    setRating(5)
+    setHoverRating(null)
     setMsg({ type: 'ok', text: 'Отзыв отправлен на модерацию ✅' })
     load()
   }
@@ -159,8 +164,8 @@ export default function ReviewsSection() {
     ))
   }
 
-  const stars = (n: number) => '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n)
   const previewLimit = 200
+  const displayRating = hoverRating ?? rating
 
   return (
     <section className="relative">
@@ -172,7 +177,7 @@ export default function ReviewsSection() {
         </h2>
         <div className="mt-4 flex flex-wrap items-center justify-center gap-3 text-sm text-neutral-500">
           <span className="text-base font-semibold text-neutral-900">
-            {avgRating ? `${avgRating}/5` : '—/5'}
+            {avgRating ? `${formatRating(avgRating)}/5` : '—/5'}
           </span>
           <span className="text-yellow-400 text-lg">★</span>
           <span className="font-semibold text-neutral-900">Отзывы клиентов</span>
@@ -290,11 +295,9 @@ export default function ReviewsSection() {
                     </div>
                   </div>
                 </div>
-                <div className="mt-4 text-sm tracking-[0.2em] text-yellow-400">
-                  {stars(r.rating).slice(0, r.rating)}
-                  <span className="text-neutral-300">
-                    {stars(r.rating).slice(r.rating)}
-                  </span>
+                <div className="mt-4 flex items-center gap-3">
+                  <StarRating value={r.rating} starClassName="h-5 w-5" />
+                  <span className="text-sm text-neutral-500">{formatRating(r.rating)}/5</span>
                 </div>
                 <div className="mt-4 rounded-2xl bg-black/[0.04] p-4">
                   <p className="text-sm leading-relaxed text-neutral-700 break-words whitespace-pre-wrap">
@@ -362,35 +365,52 @@ export default function ReviewsSection() {
                       className="flex items-center gap-1"
                       role="radiogroup"
                       aria-label="Оценка"
+                      onMouseLeave={() => setHoverRating(null)}
+                      onBlur={(event) => {
+                        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                          setHoverRating(null)
+                        }
+                      }}
                     >
-                      {Array.from({ length: 5 }, (_, index) => {
-                        const value = index + 1
-                        const active = (hoverRating ?? rating) >= value
-                        return (
-                          <button
-                            key={value}
-                            type="button"
-                            role="radio"
-                            aria-checked={rating === value}
-                            aria-label={`${value} из 5`}
-                            onClick={() => setRating(value)}
-                            onMouseEnter={() => setHoverRating(value)}
-                            onMouseLeave={() => setHoverRating(null)}
-                            onFocus={() => setHoverRating(value)}
-                            onBlur={() => setHoverRating(null)}
-                            className="text-2xl transition-transform duration-150 hover:scale-110"
-                          >
-                            <span className={active ? 'text-yellow-400' : 'text-yellow-400/30'}>
-                              ★
-                            </span>
-                          </button>
-                        )
-                      })}
+                      <div className="relative">
+                        <StarRating value={displayRating} starClassName="h-8 w-8" className="pointer-events-none" />
+                        <div className="absolute inset-0 flex items-stretch gap-1">
+                          {Array.from({ length: 5 }, (_, index) => {
+                            const leftValue = index + 0.5
+                            const rightValue = index + 1
+
+                            return (
+                              <div key={rightValue} className="relative h-8 w-8 shrink-0">
+                                <button
+                                  type="button"
+                                  role="radio"
+                                  aria-checked={rating === leftValue}
+                                  aria-label={`${formatRating(leftValue)} из 5`}
+                                  onClick={() => setRating(leftValue)}
+                                  onMouseEnter={() => setHoverRating(leftValue)}
+                                  onFocus={() => setHoverRating(leftValue)}
+                                  className="absolute inset-y-0 left-0 z-10 w-1/2 rounded-l-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-400"
+                                />
+                                <button
+                                  type="button"
+                                  role="radio"
+                                  aria-checked={rating === rightValue}
+                                  aria-label={`${formatRating(rightValue)} из 5`}
+                                  onClick={() => setRating(rightValue)}
+                                  onMouseEnter={() => setHoverRating(rightValue)}
+                                  onFocus={() => setHoverRating(rightValue)}
+                                  className="absolute inset-y-0 right-0 z-10 w-1/2 rounded-r-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-400"
+                                />
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
                     </div>
                     <div className="text-sm text-neutral-500" aria-live="polite">
-                      {rating} из 5
+                      {formatRating(displayRating)} из 5
                     </div>
-                    <span className="text-sm text-neutral-600">{rating}/5</span>
+                    <span className="text-sm text-neutral-600">{formatRating(rating)}/5</span>
                   </div>
                 </label>
 

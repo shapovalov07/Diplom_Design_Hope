@@ -49,7 +49,9 @@ export async function GET(_req: Request, ctx: Ctx) {
       author: {
         select: {
           id: true,
-          fullName: true,
+          lastName: true,
+          firstName: true,
+          middleName: true,
           role: true,
         },
       },
@@ -91,7 +93,9 @@ export async function POST(req: Request, ctx: Ctx) {
       author: {
         select: {
           id: true,
-          fullName: true,
+          lastName: true,
+          firstName: true,
+          middleName: true,
           role: true,
         },
       },

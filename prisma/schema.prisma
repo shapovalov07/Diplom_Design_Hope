@@ -8,7 +8,9 @@ datasource db {
 
 model User {
   id           String    @id @default(uuid())
-  fullName     String
+  lastName     String    @default("")
+  firstName    String
+  middleName   String    @default("")
   email        String    @unique
   passwordHash String
   role         UserRole  @default(USER)
@@ -40,7 +42,7 @@ model Review {
   userId     String
   authorName String
   avatarUrl  String?
-  rating     Int
+  rating     Float
   text       String
   isApproved Boolean  @default(false)
   createdAt  DateTime @default(now())

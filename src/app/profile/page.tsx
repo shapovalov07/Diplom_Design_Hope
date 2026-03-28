@@ -19,7 +19,12 @@ export default async function ProfilePage() {
         </div>
 
         <div className="mt-10 grid gap-8">
-          <ProfileForm initialFullName={user.fullName} initialEmail={user.email} />
+          <ProfileForm
+            initialLastName={user.lastName}
+            initialFirstName={user.firstName}
+            initialMiddleName={user.middleName}
+            initialEmail={user.email}
+          />
           <ProfileInquiries currentUserId={user.id} />
         </div>
       </div>

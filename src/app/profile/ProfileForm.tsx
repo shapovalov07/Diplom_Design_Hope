@@ -4,52 +4,30 @@ import { useMemo, useState } from 'react'
 import LogoutButton from '@/src/components/LogoutButton'
 
 type ProfileFormProps = {
-  initialFullName: string
+  initialLastName: string
+  initialFirstName: string
+  initialMiddleName: string
   initialEmail: string
 }
 
-function splitFullName(fullName: string) {
-  const parts = fullName.trim().split(/\s+/).filter(Boolean)
-  if (parts.length === 0) {
-    return { lastName: '', firstName: '', middleName: '' }
-  }
-  if (parts.length === 1) {
-    return { lastName: '', firstName: parts[0], middleName: '' }
-  }
-  const [lastName, firstName, ...rest] = parts
-  return { lastName, firstName, middleName: rest.join(' ') }
-}
-
-function joinFullName({
-  lastName,
-  firstName,
-  middleName,
-}: {
-  lastName: string
-  firstName: string
-  middleName: string
-}) {
-  return [lastName, firstName, middleName]
-    .map((part) => part.trim())
-    .filter(Boolean)
-    .join(' ')
-}
-
-export default function ProfileForm({ initialFullName, initialEmail }: ProfileFormProps) {
-  const normalizedName = initialFullName.trim()
+export default function ProfileForm({
+  initialLastName,
+  initialFirstName,
+  initialMiddleName,
+  initialEmail,
+}: ProfileFormProps) {
   const normalizedEmail = initialEmail.trim().toLowerCase()
-  const initialNameParts = splitFullName(normalizedName)
-  const [lastName, setLastName] = useState(initialNameParts.lastName)
-  const [firstName, setFirstName] = useState(initialNameParts.firstName)
-  const [middleName, setMiddleName] = useState(initialNameParts.middleName)
+  const [lastName, setLastName] = useState(initialLastName.trim())
+  const [firstName, setFirstName] = useState(initialFirstName.trim())
+  const [middleName, setMiddleName] = useState(initialMiddleName.trim())
   const [email, setEmail] = useState(normalizedEmail)
   const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null)
   const [savedState, setSavedState] = useState({
-    lastName: initialNameParts.lastName,
-    firstName: initialNameParts.firstName,
-    middleName: initialNameParts.middleName,
+    lastName: initialLastName.trim(),
+    firstName: initialFirstName.trim(),
+    middleName: initialMiddleName.trim(),
     email: normalizedEmail,
   })
 
@@ -76,10 +54,11 @@ export default function ProfileForm({ initialFullName, initialEmail }: ProfileFo
       setSaving(false)
       return
     }
-    const fullName = joinFullName({ lastName, firstName, middleName })
 
     const payload = {
-      fullName,
+      lastName: lastName.trim(),
+      firstName: firstName.trim(),
+      middleName: middleName.trim(),
       email: email.trim().toLowerCase(),
     }
 
@@ -99,19 +78,20 @@ export default function ProfileForm({ initialFullName, initialEmail }: ProfileFo
         return
       }
 
-      const nextName = data?.user?.fullName || payload.fullName
-      const nextNameParts = splitFullName(nextName)
+      const nextLastName = data?.user?.lastName ?? payload.lastName
+      const nextFirstName = data?.user?.firstName ?? payload.firstName
+      const nextMiddleName = data?.user?.middleName ?? payload.middleName
       const nextEmail = data?.user?.email || payload.email
 
       setSavedState({
-        lastName: nextNameParts.lastName,
-        firstName: nextNameParts.firstName,
-        middleName: nextNameParts.middleName,
+        lastName: nextLastName,
+        firstName: nextFirstName,
+        middleName: nextMiddleName,
         email: nextEmail,
       })
-      setLastName(nextNameParts.lastName)
-      setFirstName(nextNameParts.firstName)
-      setMiddleName(nextNameParts.middleName)
+      setLastName(nextLastName)
+      setFirstName(nextFirstName)
+      setMiddleName(nextMiddleName)
       setEmail(nextEmail)
       setMsg({ type: 'ok', text: 'Данные сохранены' })
       setIsEditing(false)

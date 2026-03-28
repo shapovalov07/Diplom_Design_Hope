@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/src/lib/prisma'
 import { requireUser } from '@/src/lib/auth'
+import { normalizeUserNameFields } from '@/src/lib/user-name'
 
 export const runtime = 'nodejs'
 
@@ -9,15 +10,15 @@ export async function PATCH(req: Request) {
     const user = await requireUser()
     const body = await req.json().catch(() => null)
 
-    const fullName = String(body?.fullName || '').trim()
+    const { lastName, firstName, middleName } = normalizeUserNameFields({
+      lastName: body?.lastName,
+      firstName: body?.firstName,
+      middleName: body?.middleName,
+    })
     const email = String(body?.email || '').trim().toLowerCase()
-    const fullNameParts = fullName.split(/\s+/).filter(Boolean)
 
-    if (!fullName || !email) {
-      return NextResponse.json({ error: 'Заполните имя и email' }, { status: 400 })
-    }
-    if (fullNameParts.length < 2) {
-      return NextResponse.json({ error: 'Укажите фамилию и имя' }, { status: 400 })
+    if (!lastName || !firstName || !email) {
+      return NextResponse.json({ error: 'Заполните фамилию, имя и email' }, { status: 400 })
     }
 
     if (!email.includes('@')) {
@@ -38,8 +39,8 @@ export async function PATCH(req: Request) {
 
     const updated = await prisma.user.update({
       where: { id: user.id },
-      data: { fullName, email },
-      select: { id: true, fullName: true, email: true, role: true },
+      data: { lastName, firstName, middleName, email },
+      select: { id: true, lastName: true, firstName: true, middleName: true, email: true, role: true },
     })
 
     return NextResponse.json({ user: updated })

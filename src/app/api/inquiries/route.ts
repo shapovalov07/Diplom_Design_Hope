@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/src/lib/prisma'
 import { ApiAuthError, requireApiUser } from '@/src/lib/auth'
 import { sendTelegramMessage } from '@/src/lib/telegram'
+import { formatUserFullName } from '@/src/lib/user-name'
 import {
   checkRateLimit,
   csrfErrorResponse,
@@ -66,7 +67,7 @@ export async function POST(req: Request) {
         userId: user.id,
         serviceType: trimmedService,
         description: trimmedDescription,
-        fullName: fullName ? String(fullName).trim() : user.fullName,
+        fullName: fullName ? String(fullName).trim() : formatUserFullName(user),
       },
     })
 

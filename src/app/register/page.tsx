@@ -41,8 +41,6 @@ export default function RegisterPage() {
       return
     }
 
-    const fullName = [normalizedLastName, normalizedFirstName].join(' ')
-
     setLoading(true)
 
     try {
@@ -50,7 +48,13 @@ export default function RegisterPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ fullName, email: normalizedEmail, password }),
+        body: JSON.stringify({
+          lastName: normalizedLastName,
+          firstName: normalizedFirstName,
+          middleName: '',
+          email: normalizedEmail,
+          password,
+        }),
       })
 
       const data = await res.json().catch(() => null)

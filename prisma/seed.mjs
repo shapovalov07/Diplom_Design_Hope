@@ -20,7 +20,9 @@ async function main() {
     where: { email },
     update: { role: 'ADMIN' },
     create: {
-      fullName: 'Admin',
+      lastName: '',
+      firstName: 'Admin',
+      middleName: '',
       email,
       passwordHash,
       role: 'ADMIN',

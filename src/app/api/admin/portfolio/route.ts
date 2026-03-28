@@ -27,7 +27,7 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
       include: {
         publishedBy: {
-          select: { id: true, fullName: true, email: true },
+          select: { id: true, lastName: true, firstName: true, middleName: true, email: true },
         },
       },
     })

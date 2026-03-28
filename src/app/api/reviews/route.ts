@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/src/lib/prisma'
 import { ApiAuthError, requireApiUser } from '@/src/lib/auth'
+import { formatRating, isValidRating } from '@/src/lib/rating'
 import { sendTelegramMessage } from '@/src/lib/telegram'
+import { formatUserFullName } from '@/src/lib/user-name'
 import {
   checkRateLimit,
   csrfErrorResponse,
@@ -31,13 +33,14 @@ export async function POST(req: Request) {
 
   try {
     const user = await requireApiUser()
+    const authorName = formatUserFullName(user)
     if (!(await hasValidCsrfToken(req))) return csrfErrorResponse()
     const body = await req.json().catch(() => null)
     const rating = Number(body?.rating)
     const text = String(body?.text ?? '').trim()
     const avatarRaw = body?.avatarUrl
 
-    if (!Number.isInteger(rating) || rating < 1 || rating > 5 || text.length < 3 || text.length > 2000) {
+    if (!isValidRating(rating) || text.length < 3 || text.length > 2000) {
       return NextResponse.json({ error: 'Некорректные данные' }, { status: 400 })
     }
 
@@ -53,7 +56,7 @@ export async function POST(req: Request) {
     const review = await prisma.review.create({
       data: {
         userId: user.id,
-        authorName: user.fullName,
+        authorName,
         avatarUrl,
         rating,
         text,
@@ -63,9 +66,9 @@ export async function POST(req: Request) {
     await sendTelegramMessage(
       [
         '📝 Новый отзыв',
-        `Автор: ${user.fullName}`,
+        `Автор: ${authorName}`,
         `Email: ${user.email}`,
-        `Оценка: ${rating}/5`,
+        `Оценка: ${formatRating(rating)}/5`,
         `Текст: ${review.text}`,
         `ID: ${review.id}`,
       ].join('\n'),

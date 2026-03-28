@@ -5,6 +5,7 @@ services:
     restart: always
     ports:
       - "3000:3000"
+      - "5555:5555"
     entrypoint: ["/app/docker-entrypoint.sh"]
     volumes:
       - ../Diplom_Design_Hope_deploy_20f9eb3_vm/public/uploads:/app/public/uploads
@@ -13,6 +14,10 @@ services:
       NEXT_TELEMETRY_DISABLED: "1"
       DATABASE_URL: postgresql://postgres:postgres@db:5432/diplom_design_hope
       SESSION_SECRET: change_me_please_replace_with_32_char_secret
+    command:
+      - sh
+      - -c
+      - npx prisma studio --browser none --port 5555 --url "$$DATABASE_URL" & exec npm start
     depends_on:
       db:
         condition: service_healthy

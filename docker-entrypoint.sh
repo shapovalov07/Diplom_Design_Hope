@@ -8,4 +8,8 @@ echo "[entrypoint] Seeding admin user..."
 node prisma/seed.mjs
 
 echo "[entrypoint] Starting Next.js..."
+if [ "$#" -gt 0 ]; then
+  exec "$@"
+fi
+
 exec npm start

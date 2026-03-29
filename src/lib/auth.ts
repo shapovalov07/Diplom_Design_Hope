@@ -4,7 +4,7 @@ import { prisma } from '@/src/lib/prisma'
 import { SESSION_COOKIE_NAME } from '@/src/lib/security-constants'
 import { verifySessionToken } from '@/src/lib/session'
 
-type Session = { userId: string; role?: 'USER' | 'ADMIN' } | null
+type Session = { userId: string; role?: 'USER' | 'ADMIN'; sessionVersion: number } | null
 
 async function readSession(): Promise<Session> {
   const jar = await cookies()
@@ -14,7 +14,7 @@ async function readSession(): Promise<Session> {
   const parsed = await verifySessionToken(raw)
   if (!parsed) return null
 
-  return { userId: parsed.userId, role: parsed.role }
+  return { userId: parsed.userId, role: parsed.role, sessionVersion: parsed.sessionVersion }
 }
 
 export async function getCurrentUser() {
@@ -23,10 +23,23 @@ export async function getCurrentUser() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
-    select: { id: true, lastName: true, firstName: true, middleName: true, email: true, role: true },
+    select: {
+      id: true,
+      lastName: true,
+      firstName: true,
+      middleName: true,
+      email: true,
+      role: true,
+      sessionVersion: true,
+    },
   })
 
-  return user ?? null
+  if (!user || user.sessionVersion !== session.sessionVersion) {
+    return null
+  }
+
+  const { sessionVersion: _sessionVersion, ...safeUser } = user
+  return safeUser
 }
 
 export async function requireUser() {

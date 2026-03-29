@@ -1,6 +1,6 @@
 # Server deploy
 
-This project can run behind Nginx Proxy Manager using a shared external Docker network and an isolated internal application network.
+This project can run behind Nginx Proxy Manager using a shared external Docker network.
 
 ## Files
 
@@ -9,10 +9,10 @@ This project can run behind Nginx Proxy Manager using a shared external Docker n
 
 ## Expected topology
 
-- `app` joins:
-  - external network `proxy` for Nginx Proxy Manager
-  - internal network `backend` for private traffic to PostgreSQL
-- `db` joins only `backend`
+- one container runs both PostgreSQL and the Next.js app
+- the container joins the external network `proxy` for Nginx Proxy Manager
+- PostgreSQL data is stored in `./storage/postgres`
+- uploaded files are stored in `./storage/uploads`
 - Nginx Proxy Manager should forward the domain to the container alias from `APP_NETWORK_ALIAS` on port `3000`
 
 ## First-time setup on the server
@@ -25,6 +25,20 @@ cp .env.server.example .env.server
 mkdir -p storage/uploads storage/postgres
 docker compose --env-file .env.server -f docker-compose.server.yml up -d --build
 ```
+
+Before the first start, edit `.env.server`:
+
+- `SESSION_SECRET`: random secret at least 32 characters long
+- `APP_BASE_URL`: public HTTPS address of the site, for example `https://design-hope.ru`
+- `MAIL_FROM`: sender address for transactional emails
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`: SMTP config if you want to send mail directly, for example through Gmail SMTP
+- `RESEND_API_KEY`: alternative to SMTP if you prefer sending through Resend
+
+Mail transport priority:
+
+- if SMTP variables are filled, the app sends through SMTP
+- otherwise, if `RESEND_API_KEY` is filled, the app sends through Resend
+- if neither is configured, password reset emails will not be sent in production
 
 ## Updates from git
 

@@ -3,10 +3,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ${APP_IMAGE:-diplom-design-hope-app:prod}
-    container_name: ${APP_CONTAINER_NAME:-diplom-design-hope-app}
+    image: ${APP_IMAGE:-diplom_design_hope:prod}
+    container_name: ${APP_CONTAINER_NAME:-diplom_design_hope}
     restart: always
-    entrypoint: ["/app/docker-entrypoint.sh"]
     expose:
       - "3000"
     environment:
@@ -14,19 +13,34 @@ services:
       NEXT_TELEMETRY_DISABLED: "1"
       HOSTNAME: 0.0.0.0
       PORT: 3000
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:5432/${POSTGRES_DB}
       SESSION_SECRET: ${SESSION_SECRET}
+      APP_BASE_URL: ${APP_BASE_URL}
+      MAIL_FROM: ${MAIL_FROM:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_SECURE: ${SMTP_SECURE:-true}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
       TELEGRAM_THREAD_ID: ${TELEGRAM_THREAD_ID:-}
       TZ: ${TZ:-Europe/Moscow}
     volumes:
       - ./storage/uploads:/app/public/uploads
-    depends_on:
-      db:
-        condition: service_healthy
+      - ./storage/postgres:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:3000/ || exit 1"]
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -34,35 +48,9 @@ services:
     networks:
       proxy:
         aliases:
-          - ${APP_NETWORK_ALIAS:-diplom-design-hope-app}
-      backend: {}
-
-  db:
-    image: postgres:16-alpine
-    container_name: ${DB_CONTAINER_NAME:-diplom-design-hope-db}
-    restart: always
-    expose:
-      - "5432"
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      TZ: ${TZ:-Europe/Moscow}
-    volumes:
-      - ./storage/postgres:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 10s
-      timeout: 5s
-      retries: 30
-      start_period: 20s
-    networks:
-      backend: {}
+          - ${APP_NETWORK_ALIAS:-diplom_design_hope}
 
 networks:
   proxy:
     external: true
     name: ${PROXY_NETWORK:-proxy}
-  backend:
-    driver: bridge
-    internal: true

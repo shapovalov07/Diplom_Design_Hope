@@ -72,12 +72,6 @@ export default function RegisterPage() {
     }
   }
 
-  function handleEnter(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key !== 'Enter') return
-    e.preventDefault()
-    e.currentTarget.form?.requestSubmit()
-  }
-
   return (
     <div className="mx-auto mt-8 w-full max-w-[30rem] px-4 sm:px-6">
       <div className="relative overflow-hidden rounded-[36px] border border-black/10 bg-white shadow-[0_24px_70px_rgba(0,0,0,0.12)]">

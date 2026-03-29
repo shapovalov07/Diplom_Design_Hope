@@ -21,11 +21,16 @@ type SessionRole = 'USER' | 'ADMIN'
 export type SessionPayload = {
   userId: string
   role: SessionRole
+  sessionVersion: number
   iat: number
   exp: number
 }
 
-export async function createSessionToken(payload: { userId: string; role: SessionRole }) {
+export async function createSessionToken(payload: {
+  userId: string
+  role: SessionRole
+  sessionVersion: number
+}) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
@@ -44,6 +49,9 @@ export async function verifySessionToken(token: string) {
 
     if (typeof payload.userId !== 'string') return null
     if (payload.role !== 'USER' && payload.role !== 'ADMIN') return null
+    if (typeof payload.sessionVersion !== 'number' || !Number.isInteger(payload.sessionVersion)) {
+      return null
+    }
     if (typeof payload.iat !== 'number' || typeof payload.exp !== 'number') return null
 
     return payload as SessionPayload

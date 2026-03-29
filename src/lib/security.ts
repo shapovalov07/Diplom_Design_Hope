@@ -5,6 +5,8 @@ import { CSRF_COOKIE_NAME, CSRF_MAX_AGE_SECONDS } from '@/src/lib/security-const
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production'
 const RATE_LIMIT_MAX_KEYS = 10_000
+export const PASSWORD_MIN_LENGTH = 8
+export const PASSWORD_MAX_BYTES = 72
 
 type RateLimitBucket = {
   count: number
@@ -139,6 +141,20 @@ export function normalizeEmail(raw: unknown) {
 
 export function isValidEmail(email: string) {
   return email.length > 0 && email.length <= 254 && EMAIL_RE.test(email)
+}
+
+export function getPasswordValidationError(raw: unknown) {
+  const password = String(raw ?? '')
+
+  if (password.length < PASSWORD_MIN_LENGTH) {
+    return `Пароль должен содержать минимум ${PASSWORD_MIN_LENGTH} символов`
+  }
+
+  if (Buffer.byteLength(password, 'utf8') > PASSWORD_MAX_BYTES) {
+    return 'Пароль слишком длинный'
+  }
+
+  return null
 }
 
 export function isHttpUrl(value: string) {

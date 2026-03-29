@@ -1,11 +1,9 @@
 'use client'
 
-import StarRating from '@/src/components/StarRating'
 import LogoutButton from '@/src/components/LogoutButton'
 import InquiryChat from '@/src/components/InquiryChat'
 import { useEffect, useState } from 'react'
 import { withCsrfHeaders } from '@/src/lib/csrf-client'
-import { formatRating, MAX_RATING, RATING_STEP } from '@/src/lib/rating'
 import { formatUserFullName } from '@/src/lib/user-name'
 
 type AdminUser = {
@@ -747,7 +745,6 @@ function AdminInquiries({ currentUserId }: { currentUserId: string }) {
 /* -------------------- REVIEWS -------------------- */
 
 function AdminReviews() {
-  const ratingOptions = Array.from({ length: MAX_RATING / RATING_STEP }, (_, index) => MAX_RATING - index * RATING_STEP)
   const [items, setItems] = useState<Review[]>([])
   const [loading, setLoading] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -888,8 +885,11 @@ function AdminReviews() {
                   </div>
 
                   <div className="shrink-0 rounded-2xl border border-black/10 bg-white px-3 py-2 text-right">
-                    <StarRating value={r.rating} starClassName="h-4 w-4" className="justify-end gap-0.5" activeClassName="text-yellow-400" inactiveClassName="text-neutral-300" />
-                    <div className="mt-1 text-xs text-neutral-500">{formatRating(r.rating)}/5</div>
+                    <div className="text-sm tracking-[0.2em] text-neutral-800 select-none">
+                      {'★★★★★'.slice(0, r.rating)}
+                      <span className="opacity-30">{'★★★★★'.slice(r.rating)}</span>
+                    </div>
+                    <div className="text-xs text-neutral-500">{r.rating}/5</div>
                   </div>
                 </div>
 
@@ -910,8 +910,8 @@ function AdminReviews() {
                         onChange={(e) => setDraft((prev) => ({ ...prev, rating: Number(e.target.value) }))}
                         className="h-10 rounded-xl border border-black/15 bg-white px-3 outline-none"
                       >
-                        {ratingOptions.map((v) => (
-                          <option key={v} value={v}>{formatRating(v)}</option>
+                        {[5, 4, 3, 2, 1].map((v) => (
+                          <option key={v} value={v}>{v}</option>
                         ))}
                       </select>
                     </label>

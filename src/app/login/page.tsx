@@ -54,12 +54,6 @@ export default function LoginPage() {
     }
   }
 
-  function handleEnter(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key !== 'Enter') return
-    e.preventDefault()
-    e.currentTarget.form?.requestSubmit()
-  }
-
   return (
     <div className="mx-auto mt-8 w-full max-w-[30rem] px-4 sm:px-6">
       <div className="relative overflow-hidden rounded-[36px] border border-black/10 bg-white shadow-[0_24px_70px_rgba(0,0,0,0.12)]">
@@ -163,6 +157,15 @@ export default function LoginPage() {
             >
               {loading ? 'Вхожу…' : 'Войти'}
             </button>
+
+            <div className="text-right text-sm">
+              <Link
+                href="/forgot-password"
+                className="font-medium text-[#B5292A] underline decoration-[#B5292A]/25 underline-offset-4 hover:decoration-[#B5292A]/60"
+              >
+                Забыли пароль?
+              </Link>
+            </div>
 
             <div className="mt-1 border-t border-black/10 pt-3 text-center text-[15px] text-neutral-600">
               Нет аккаунта?{' '}

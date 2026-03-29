@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/src/lib/prisma'
 import { ApiAuthError, requireApiUser } from '@/src/lib/auth'
-import { formatRating, isValidRating } from '@/src/lib/rating'
 import { sendTelegramMessage } from '@/src/lib/telegram'
 import { formatUserFullName } from '@/src/lib/user-name'
 import {
@@ -40,7 +39,7 @@ export async function POST(req: Request) {
     const text = String(body?.text ?? '').trim()
     const avatarRaw = body?.avatarUrl
 
-    if (!isValidRating(rating) || text.length < 3 || text.length > 2000) {
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5 || text.length < 3 || text.length > 2000) {
       return NextResponse.json({ error: 'Некорректные данные' }, { status: 400 })
     }
 
@@ -68,7 +67,7 @@ export async function POST(req: Request) {
         '📝 Новый отзыв',
         `Автор: ${authorName}`,
         `Email: ${user.email}`,
-        `Оценка: ${formatRating(rating)}/5`,
+        `Оценка: ${rating}/5`,
         `Текст: ${review.text}`,
         `ID: ${review.id}`,
       ].join('\n'),

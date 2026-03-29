@@ -2,16 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-
-const COOKIE_KEY = 'hope_cookie_consent'
-
-function hasConsent() {
-  return document.cookie.split('; ').some((item) => item.startsWith(`${COOKIE_KEY}=`))
-}
-
-function setConsent() {
-  document.cookie = `${COOKIE_KEY}=1; path=/`
-}
+import { grantCookieConsent, hasCookieConsent } from '@/src/lib/cookie-consent'
 
 export default function CookieNotice() {
   const [mounted, setMounted] = useState(false)
@@ -20,7 +11,7 @@ export default function CookieNotice() {
 
   useEffect(() => {
     setMounted(true)
-    if (!hasConsent()) {
+    if (!hasCookieConsent()) {
       setOpen(true)
       requestAnimationFrame(() => setVisible(true))
     }
@@ -29,7 +20,7 @@ export default function CookieNotice() {
   if (!mounted || !open) return null
 
   function handleClose() {
-    setConsent()
+    grantCookieConsent()
     setVisible(false)
     window.setTimeout(() => setOpen(false), 200)
   }

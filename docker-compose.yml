@@ -1,43 +1,52 @@
+name: designhope-local
+
 services:
   app:
-    image: diplom_design_hope_deploy_20f9eb3_vm-app
-    container_name: diplom_app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: diplom_design_hope:local
+    container_name: designhope-local-app
     restart: always
     ports:
-      - "3000:3000"
-      - "5555:5555"
-    entrypoint: ["/app/docker-entrypoint.sh"]
+      - "3001:3000"
+      - "5556:5555"
+      - "55433:5432"
     volumes:
-      - ../Diplom_Design_Hope_deploy_20f9eb3_vm/public/uploads:/app/public/uploads
+      - ./storage/uploads:/app/public/uploads
+      - ./storage/postgres:/var/lib/postgresql/data
     environment:
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: "1"
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/diplom_design_hope
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: diplom_design_hope
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/diplom_design_hope
       SESSION_SECRET: change_me_please_replace_with_32_char_secret
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:3001}
+      MAIL_FROM: ${MAIL_FROM:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_SECURE: ${SMTP_SECURE:-true}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      MAIL_PREVIEW_LOCAL: "1"
     command:
       - sh
       - -c
       - npx prisma studio --browser none --port 5555 --url "$$DATABASE_URL" & exec npm start
-    depends_on:
-      db:
-        condition: service_healthy
-  db:
-    image: postgres:16
-    container_name: diplom_postgres
-    restart: always
-    ports:
-      - "55432:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: diplom_design_hope
-    volumes:
-      - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d diplom_design_hope"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-
-volumes:
-  pgdata:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s

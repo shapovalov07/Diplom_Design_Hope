@@ -3,6 +3,11 @@ import type { NextConfig } from "next";
 const isProduction = process.env.NODE_ENV === 'production'
 const yandexMetrikaOrigins = ['https://mc.yandex.ru', 'https://mc.yandex.com']
 const yandexMetrikaSources = yandexMetrikaOrigins.join(' ')
+const yandexMetrikaConnectSources = [
+  ...yandexMetrikaOrigins,
+  'wss://mc.yandex.ru',
+  'wss://mc.yandex.com',
+].join(' ')
 
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -10,7 +15,7 @@ const contentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data: https://fonts.gstatic.com",
-  `connect-src 'self' https://api.telegram.org ${yandexMetrikaSources}`,
+  `connect-src 'self' https://api.telegram.org ${yandexMetrikaConnectSources}`,
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

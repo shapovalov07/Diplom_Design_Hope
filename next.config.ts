@@ -1,15 +1,16 @@
 import type { NextConfig } from "next";
 
 const isProduction = process.env.NODE_ENV === 'production'
-const yandexMetrikaOrigin = 'https://mc.yandex.ru'
+const yandexMetrikaOrigins = ['https://mc.yandex.ru', 'https://mc.yandex.com']
+const yandexMetrikaSources = yandexMetrikaOrigins.join(' ')
 
 const contentSecurityPolicy = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' ${yandexMetrikaOrigin}${isProduction ? '' : " 'unsafe-eval'"}`,
+  `script-src 'self' 'unsafe-inline' ${yandexMetrikaSources}${isProduction ? '' : " 'unsafe-eval'"}`,
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data: https://fonts.gstatic.com",
-  `connect-src 'self' https://api.telegram.org ${yandexMetrikaOrigin}`,
+  `connect-src 'self' https://api.telegram.org ${yandexMetrikaSources}`,
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
